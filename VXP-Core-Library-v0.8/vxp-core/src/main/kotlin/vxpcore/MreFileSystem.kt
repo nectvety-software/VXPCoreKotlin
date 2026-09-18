@@ -1,0 +1,181 @@
+package vxpcore
+
+import java.io.File
+import java.io.RandomAccessFile
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import java.util.Locale
+
+/** Sandboxed subset of the MediaTek MRE filesystem API. */
+class MreFileSystem(private val root: File) : AutoCloseable {
+    companion object {
+        const val MODE_READ = 1
+        const val MODE_WRITE = 2
+        const val MODE_CREATE_ALWAYS = 4
+
+        const val ATTR_READ_ONLY = 0x01
+        const val ATTR_HIDDEN = 0x02
+        const val ATTR_SYSTEM = 0x04
+        const val ATTR_VOLUME = 0x08
+        const val ATTR_DIR = 0x10
+        const val ATTR_ARCHIVE = 0x20
+    }
+
+    private data class OpenFile(val file: RandomAccessFile, val path: File, val mode: Int)
+
+    private val handles = linkedMapOf<Int, OpenFile>()
+    private val hiddenPaths = linkedSetOf<String>()
+    private var nextHandle = 3
+
+    val internalRoot = File(root, "C")
+    val removableRoot = File(root, "E")
+
+    init {
+        internalRoot.mkdirs()
+        removableRoot.mkdirs()
+    }
+
+    fun resolveMrePath(path: String): File? {
+        val cleaned = path.replace('/', '\\').trim().trimEnd('\u0000')
+        if (cleaned.isBlank()) return null
+        val drive = if (cleaned.length >= 2 && cleaned[1] == ':') cleaned[0].uppercaseChar() else 'C'
+        val rest = if (cleaned.length >= 2 && cleaned[1] == ':') cleaned.substring(2) else cleaned
+        val base = if (drive == 'E') removableRoot else internalRoot
+        var p: Path = base.toPath().toAbsolutePath().normalize()
+        for (part in rest.split('\\')) {
+            if (part.isBlank() || part == ".") continue
+            if (part == "..") return null
+            p = p.resolve(sanitize(part))
+        }
+        p = p.normalize()
+        val basePath = base.toPath().toAbsolutePath().normalize()
+        if (!p.startsWith(basePath)) return null
+        return p.toFile()
+    }
+
+    fun open(path: String, mode: Int): Int {
+        val target = resolveMrePath(path) ?: return -1
+        return try {
+            val writable = (mode and (MODE_WRITE or MODE_CREATE_ALWAYS)) != 0
+            if (!writable && !target.isFile) return -1
+            target.parentFile?.mkdirs()
+            val raf = RandomAccessFile(target, if (writable) "rw" else "r")
+            if ((mode and MODE_CREATE_ALWAYS) != 0) raf.setLength(0)
+            val h = allocHandle()
+            handles[h] = OpenFile(raf, target, mode)
+            h
+        } catch (_: Throwable) {
+            -1
+        }
+    }
+
+    fun close(handle: Int): Int {
+        val o = handles.remove(handle) ?: return -1
+        return try { o.file.close(); 0 } catch (_: Throwable) { -1 }
+    }
+
+    fun size(handle: Int): Long? = handles[handle]?.let { runCatching { it.file.length() }.getOrNull() }
+
+    fun read(handle: Int, length: Int): ByteArray? {
+        val o = handles[handle] ?: return null
+        if (length < 0) return null
+        return try {
+            val out = ByteArray(length)
+            val n = o.file.read(out)
+            if (n < 0) ByteArray(0) else if (n == length) out else out.copyOf(n)
+        } catch (_: Throwable) { null }
+    }
+
+    fun write(handle: Int, bytes: ByteArray): Int {
+        val o = handles[handle] ?: return -1
+        return try { o.file.write(bytes); bytes.size } catch (_: Throwable) { -1 }
+    }
+
+    fun seek(handle: Int, offset: Long, origin: Int): Long? {
+        val o = handles[handle] ?: return null
+        return try {
+            val base = when (origin) {
+                0 -> 0L
+                1 -> o.file.filePointer
+                2 -> o.file.length()
+                else -> return null
+            }
+            val pos = (base + offset).coerceAtLeast(0L)
+            o.file.seek(pos)
+            pos
+        } catch (_: Throwable) { null }
+    }
+
+    fun commit(handle: Int): Int {
+        val o = handles[handle] ?: return -1
+        return try { o.file.fd.sync(); 0 } catch (_: Throwable) { -1 }
+    }
+
+    fun attributes(path: String): Int {
+        val f = resolveMrePath(path) ?: return -1
+        if (!f.exists()) return -1
+        var a = if (f.isDirectory) ATTR_DIR else ATTR_ARCHIVE
+        if (!f.canWrite()) a = a or ATTR_READ_ONLY
+        if (hiddenPaths.contains(key(f)) || f.name.startsWith(".")) a = a or ATTR_HIDDEN
+        return a
+    }
+
+    fun setAttributes(path: String, attributes: Int): Int {
+        val f = resolveMrePath(path) ?: return -1
+        if (!f.exists()) return -1
+        val k = key(f)
+        if ((attributes and ATTR_HIDDEN) != 0) hiddenPaths += k else hiddenPaths -= k
+        runCatching { f.setWritable((attributes and ATTR_READ_ONLY) == 0, false) }
+        return 0
+    }
+
+    fun mkdir(path: String): Int {
+        val f = resolveMrePath(path) ?: return -1
+        return when {
+            f.isDirectory -> 0
+            f.exists() -> -1
+            f.mkdirs() -> 0
+            else -> -1
+        }
+    }
+
+    fun delete(path: String): Int {
+        val f = resolveMrePath(path) ?: return -1
+        return if (f.isFile && f.delete()) 0 else -1
+    }
+
+    fun rmdir(path: String): Int {
+        val f = resolveMrePath(path) ?: return -1
+        return if (f.isDirectory && f.delete()) 0 else -1
+    }
+
+    fun copy(from: String, to: String): Int {
+        val src = resolveMrePath(from) ?: return -1
+        val dst = resolveMrePath(to) ?: return -1
+        if (!src.isFile) return -1
+        return try {
+            dst.parentFile?.mkdirs()
+            Files.copy(src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            0
+        } catch (_: Throwable) { -1 }
+    }
+
+    fun describeHandle(handle: Int): String = handles[handle]?.path?.path ?: "?"
+
+    override fun close() {
+        handles.values.forEach { runCatching { it.file.close() } }
+        handles.clear()
+    }
+
+    private fun allocHandle(): Int {
+        while (handles.containsKey(nextHandle) || nextHandle < 0) nextHandle++
+        return nextHandle++
+    }
+
+    private fun sanitize(part: String): String = part.map {
+        if (it.code < 32 || it in charArrayOf('<', '>', ':', '"', '|', '?', '*')) '_' else it
+    }.joinToString("")
+
+    private fun key(f: File): String = f.absoluteFile.normalize().path.lowercase(Locale.ROOT)
+}

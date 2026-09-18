@@ -1,0 +1,21 @@
+# Gradle / Android
+.gradle/
+build/
+*/build/
+out/
+local.properties
+*.iml
+.idea/
+.DS_Store
+
+# Kotlin / Java compiled
+*.class
+
+# Keep release jars in dist/, ignore other jars
+*.jar
+!VXP-Core-Library-*/dist/*.jar
+
+# OS / Editor
+Thumbs.db
+.vscode/
+*.swp

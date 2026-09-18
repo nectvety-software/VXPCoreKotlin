@@ -1,0 +1,6 @@
+backend=RAW_ARM_ZLIB
+instructions=6896572
+frames=76
+events=77
+stubbed=
+frame=240x320 serial=76 sha256=7613e735b14923b10b6b4c8992c1e2572f2e540640882781d39a8c0505ca432a

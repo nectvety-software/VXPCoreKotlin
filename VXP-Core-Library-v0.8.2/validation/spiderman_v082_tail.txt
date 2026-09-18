@@ -1,0 +1,8 @@
+OK language
+OK prompt
+OK title
+OK menu1
+OK menu2
+DOWN
+OK after down
+frames=425 result=VxpRunResult(backend=RAW_ARM_ZLIB, exitCode=0, instructions=23524795, frames=425, events=440, timerCallbacks=424, timedOut=true, resolvedSymbols=[vm_calloc, vm_get_system_driver, vm_ascii_to_ucs2, vm_file_get_attributes, vm_file_mkdir, vm_file_set_attributes, vm_get_removeable_driver, vm_free, vm_switch_power_saving_mode, vm_get_imei, vm_malloc, vm_file_open, vm_get_disk_free_space, vm_file_close, vm_reg_sysevt_callback, vm_reg_keyboard_callback, vm_reg_pen_callback, vm_get_res_header, vm_load_resource, vm_get_language_ssc, vm_create_timer, vm_audio_suspend_bg_play, vm_set_volume, vm_audio_resume_bg_play, vm_graphic_get_screen_height, vm_graphic_get_screen_width, vm_graphic_create_layer, vm_graphic_set_clip, vm_graphic_get_layer_buffer, vm_file_getfilesize, vm_get_tick_count, vm_get_exec_filename, vm_get_vm_tag, vm_graphic_setcolor, vm_graphic_fill_rect, vm_graphic_flush_layer, vm_resource_get_data, vm_graphic_create_canvas, vm_graphic_get_canvas_buffer, vm_graphic_canvas_set_trans_color, vm_graphic_blt, vm_graphic_release_canvas, vm_graphic_mirror, vm_graphic_load_image, vm_graphic_get_img_property, vm_realloc, vm_get_sys_scene, vm_midi_stop, vm_midi_play_by_bytes, vm_sim_get_active_sim_card, vm_file_write, vm_file_commit, vm_appmgr_get_installed_list, vm_query_operator_code, vm_has_sim_card, vm_get_sim_card_status, vm_set_active_sim_card, strtoi], stubbedSymbols=[])
