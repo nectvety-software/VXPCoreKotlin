@@ -1,0 +1,91 @@
+# VXP-Core Library — Wiki（简体中文）
+
+## 致谢
+
+由 **DOXUANHOP** 维护 — https://qeafivels.com/  
+命名空间：`vn.com.doxuanhop.vxpcore.android`。如使用本库，
+请附上 https://qeafivels.com/ 链接以示致谢。
+
+## 1. 概述
+
+纯 Kotlin 核心库，用于在现有 Android UI 中运行 MediaTek `.vxp`。
+无 Activity/View/Compose，无 JNI/NDK/CMake/C/C++，无 `System.loadLibrary`。
+Guest ARM/Thumb 代码由 Kotlin 解释器执行。
+
+```
+VXP -> AndroidVxpCore -> Kotlin 后端（ARM/MRE 或 Flash Lite）
+  -> FrameSnapshot RGB565 -> 你的控制器 -> 现有 UI
+```
+
+## 2. 版本
+
+| 目录 | 版本 | 产物 | 说明 |
+|---|---|---|---|
+| `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | 首次拆分为库 |
+| `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | 最新：Thumb ALU、SMS 沙箱、长回归 |
+
+新项目请使用 **v0.8.2**。详见 `VERSIONS.md`。
+
+## 3. 后端支持
+
+- `ELF32 ARM` → Kotlin ARM/Thumb + MRE：支持。
+- Raw ARM + zlib（`RAW_ARM_ZLIB`，Gameloft）→ Kotlin ARM/Thumb + MRE：支持。
+- Flash Lite `FWS/CWS` → Android Kotlin + SWF/AVM1：兼容优先。
+- 未知格式 → 检测器返回 `UNKNOWN`，不回退 MREmu。
+
+## 4. 环境要求
+
+JDK 17+、Gradle 8.x、AGP `8.7.3`、Kotlin `2.0.21`、
+Android `compileSdk 35` / `minSdk 23`，仓库 `google()` + `mavenCentral()`。
+无需 NDK/CMake。校验：`./verify_kotlin_only.sh`。
+
+## 5. 安装
+
+```kotlin
+// settings.gradle.kts
+include(":vxp-core")
+include(":vxp-core-android")
+
+// app 模块
+dependencies {
+    implementation(project(":vxp-core-android")) // 自动引入 :vxp-core
+}
+```
+
+也可直接使用预构建的 `dist/vxp-core-0.8.2.jar`。
+
+## 6. 用法
+
+```kotlin
+val session = AndroidVxpCore.open(
+    bytes = vxpBytes,
+    fileName = fileName,
+    storageRoot = File(context.filesDir, "vxp_runtime"),
+    listener = object : VxpCoreListener {
+        override fun onFrame(frame: FrameSnapshot) { /* RGB565 -> UI */ }
+        override fun onState(state: VxpSessionState) { /* Starting/Running/Stopped/Failed */ }
+    }
+)
+session.start()
+session.keyDownLegacy(5); session.keyUpLegacy(5) // OK
+session.penDown(x, y); session.penMove(x, y); session.penUp(x, y)
+session.stop(); session.close()
+```
+
+按键：`1 上，2 下，3 左，4 右，5 OK，6 LSK，7 RSK，10 清除，48-57 数字，42 *，35 #`。
+首帧之前可显示启动文字；收到 `onFrame()` 后，游戏帧缓冲是唯一的 LCD 来源。
+
+## 7. 验证
+
+- 蜘蛛侠（`RAW_ARM_ZLIB`）：23,524,795 指令 / 425 帧 / 440 事件 / 424 定时器，240x320 RGB565，无故障，`stubbedSymbols = []`。
+- Crazy Taxi（`FLASH_LITE`）：176x220 @20fps，35 帧，菜单第 4 帧 → OK → 真实 AVM1 跳到第 5 帧。
+
+## 8. 安全
+
+`vm_send_sms` 在沙箱中恒返回失败；核心绝不发送真实短信或计费流量。
+
+## 9. 链接
+
+- https://qeafivels.com/
+- `../VERSIONS.md`、`../README.md`
+- `VXP-Core-Library-v0.8.2/docs/INTEGRATE_EXISTING_UI.md`、`docs/TEST_RESULTS.md`
