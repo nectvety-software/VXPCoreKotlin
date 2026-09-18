@@ -28,11 +28,12 @@ Maintained by **DOXUANHOP**.
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | First library split, UI removed from deliverable |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` (core + Android facade in sync) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + SMS sandbox + long regression |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` (core + Android facade in sync) | `dist/vxp-core-0.8.3.jar` | ELF/GCC compat (R_ARM_RELATIVE, gcc_entry, CLZ/LDRD/long-multiply) + 3 new ELF titles |
-| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room edition | `dist/vxp-core-0.8.3-cleanroom.jar` | Latest, rebased Kotlin-only, no SDK-derived catalog, + provenance/compliance docs |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room edition | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebased Kotlin-only, no SDK-derived catalog, + provenance/compliance docs |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room edition | `dist/vxp-core-0.8.4.1.jar` | Latest, SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed symbols first-class |
 
 See `VERSIONS.md` for the full Vietnamese version matrix, and
-`VXP-Core-Library-v0.8.3-cleanroom/CHANGELOG.md` for details.
-Use `v0.8.3-cleanroom` for all new integrations and any distribution build.
+`VXP-Core-Library-v0.8.4.1/CHANGELOG.md` for details.
+Use `v0.8.4.1` for all new integrations and any distribution build.
 
 ## Supported backends
 
@@ -48,7 +49,9 @@ Validated:
 - *The Amazing Spider-Man - The Daily Bugle* (`RAW_ARM_ZLIB`): 23,524,795 instructions / 425 frames / 440 events / 424 timers, 240x320 RGB565, no CPU/memory fault, `stubbedSymbols = []` (v0.8.2; re-validated in v0.8.3 with 78 frames / 9.4M instr, no stubs).
 - *CrazyTaxi_1.0.vxp* (`FLASH_LITE`): stage 176x220, 20 FPS, 35 frames, 25 shapes / 12 sprites / 5 JPEG3 / 7 buttons, startup menu frame 4, `OK` runs a real AVM1 `ButtonCondAction` to frame 5.
 - *v0.8.3 new ELF titles*: `CatBoxMRE.vxp` gameplay (218 frames / 28.3M instr), `RetroMRE.vxp` menu `RETRO MRE / PIXEL LAUNCHER` (18 frames / 11.8M instr, real `vm_find_first/next/close` + UCS2 NUL fix), `Whisk3D.vxp` 3D scene cube/sphere/cone (9 frames / 33.3M instr).
-- *v0.8.3-cleanroom re-validation*: same compat re-run on the rebased Kotlin-only tree — CatBoxMRE 30.1M instr / 218 frames, RetroMRE 19.0M / 28 frames, Whisk3D 33.3M / 9 frames, Spider-Man 9.5M / 82 frames no unresolved symbols, Crazy Taxi menu 4 → OK → frame 5. `verify_clean_room.sh` PASS, no C/C++/JNI/NDK or SDK-derived catalog in package.
+- *v0.8.3-cleanroom re-validation*: CatBoxMRE 30.1M / 218f, RetroMRE 19.0M / 28f, Whisk3D 33.3M / 9f, Spider-Man 9.5M / 82f, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
+- *v0.8.4.1 SYSTEM/GRAPHICS/FILE_RESOURCE pass*: tick/resolver/callback aliases (`vm_get_tick`, `vm_get_sym_entry`, `vm_reg_key/touch/system_event_callback`, `vm_get_removable_driver` spelling), `vm_sscanf` subset, sandbox disk free-space; graphics `screen_w/h`, image buffer/property/load/release aliases, `create_layer_ex` first-class, `vm_graphic_mirror` software path; file dual `get_file_size`, hardened open/append, `vm_resource_init`/`vm_res_load` aliases. Observed corpus: 76/76 unique `vm_*` first-class, 0 missing.
+- *v0.8.4.1 timed runs*: CatBoxMRE 30.8M instr / 218 frames, RetroMRE 26.8M / 39 frames, Whisk3D 33.3M / 9 frames, Spider-Man 9.4M / 83 frames `stubbedSymbols=[]`, Crazy Taxi menu 4 → OK (10 AVM1) → frame 5.
 
 User-supplied commercial binaries are test-only and are not bundled in the ZIP/JAR.
 
@@ -165,7 +168,10 @@ Strings such as `GL_Demo / UNLOCK / SMS` in test binaries are runtime data only.
 - Project site: https://qeafivels.com/
 - Version matrix: `./VERSIONS.md`
 - v0.8.3 README: `./VXP-Core-Library-v0.8.3/README.md`
-- v0.8.3-cleanroom (latest): `./VXP-Core-Library-v0.8.3-cleanroom/README.md`, `NOTICE-CLEANROOM.txt`
+- v0.8.3-cleanroom: `./VXP-Core-Library-v0.8.3-cleanroom/README.md`, `NOTICE-CLEANROOM.txt`
+- v0.8.4.1 README: `./VXP-Core-Library-v0.8.4.1/README.md`
+- Clean-room policy: `./VXP-Core-Library-v0.8.4.1/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/OBSERVED_COMPATIBILITY_SURFACE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
+- v0.8.4.1 validation: `./VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`
 - Clean-room policy: `./VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
 - Clean-room validation: `./VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
 - Integration guide: `./VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`

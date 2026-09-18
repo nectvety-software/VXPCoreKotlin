@@ -1,0 +1,1 @@
+[OK] ARM CLZ regression: clz(0x8)=28, clz(0)=32

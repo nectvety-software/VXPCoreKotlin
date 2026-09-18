@@ -1,0 +1,17 @@
+FILE=The Amazing Spider-Man - The Daily Bugle(1).vxp
+BACKEND=RAW_ARM_ZLIB
+STATE=Starting(backend=RAW_ARM_ZLIB)
+STATE=Running(backend=RAW_ARM_ZLIB)
+INJECT=OK
+INJECT=DOWN
+INJECT=OK
+INJECT=LEFT_SOFT
+INJECT=RIGHT_SOFT
+INJECT=UP
+INJECT=OK
+STATE=Stopped(result=VxpRunResult(backend=RAW_ARM_ZLIB, exitCode=0, instructions=9530923, frames=87, events=102, timerCallbacks=86, timedOut=true, resolvedSymbols=[vm_calloc, vm_get_system_driver, vm_ascii_to_ucs2, vm_file_get_attributes, vm_file_mkdir, vm_file_set_attributes, vm_get_removeable_driver, vm_free, vm_switch_power_saving_mode, vm_get_imei, vm_malloc, vm_file_open, vm_get_disk_free_space, vm_file_close, vm_reg_sysevt_callback, vm_reg_keyboard_callback, vm_reg_pen_callback, vm_get_res_header, vm_load_resource, vm_get_language_ssc, vm_create_timer, vm_audio_suspend_bg_play, vm_set_volume, vm_audio_resume_bg_play, vm_graphic_get_screen_height, vm_graphic_get_screen_width, vm_graphic_create_layer, vm_graphic_set_clip, vm_graphic_get_layer_buffer, vm_file_getfilesize, vm_get_tick_count, vm_get_exec_filename, vm_get_vm_tag, vm_graphic_setcolor, vm_graphic_fill_rect, vm_graphic_flush_layer, vm_resource_get_data, vm_graphic_create_canvas, vm_graphic_get_canvas_buffer, vm_graphic_canvas_set_trans_color, vm_graphic_blt, vm_graphic_release_canvas, vm_graphic_mirror], stubbedSymbols=[]))
+FRAME_CALLBACKS=87
+LAST_FRAME=240x320 serial=87
+RESULT backend=RAW_ARM_ZLIB exit=0 instructions=9530923 frames=87 events=102 timers=86 timedOut=true
+RESOLVED=43
+STUBBED=

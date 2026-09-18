@@ -24,9 +24,10 @@ VXP -> AndroidVxpCore -> backend Kotlin (ARM/MRE hoặc Flash Lite)
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | Tách thư viện lần đầu |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS sandbox, regression dài |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | Tương thích ELF/GCC + 3 title ELF mới |
-| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Mới nhất: rebase Kotlin-only, docs provenance/compliance |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebase Kotlin-only, docs provenance/compliance |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | Mới nhất: alias SYSTEM/GRAPHICS/FILE_RESOURCE, 76/76 observed first-class |
 
-Tích hợp mới và mọi bản phân phối dùng **v0.8.3-cleanroom**. Xem `VERSIONS.md`.
+Tích hợp mới và mọi bản phân phối dùng **v0.8.4.1**. Xem `VERSIONS.md`.
 
 ## 3. Backend
 
@@ -54,7 +55,7 @@ dependencies {
 }
 ```
 
-Hoặc dùng `dist/vxp-core-0.8.3-cleanroom.jar` dựng sẵn.
+Hoặc dùng `dist/vxp-core-0.8.4.1.jar` dựng sẵn.
 
 ## 6. Sử dụng
 
@@ -84,7 +85,9 @@ là nguồn LCD duy nhất.
 - Crazy Taxi (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 bằng AVM1 thật.
 - v0.8.3 thêm 3 title ELF: `CatBoxMRE` gameplay (218 frames / 28.3M instr), `RetroMRE` menu (18 frames / 11.8M instr, `vm_find_*` thật + fix UCS2 NUL), `Whisk3D` scene 3D (9 frames / 33.3M instr).
 - Fix CPU v0.8.3: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + nhân dài, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` wildcard.
-- Re-validation clean-room: CatBoxMRE 30.1M/218f, RetroMRE 19.0M/28f, Whisk3D 33.3M/9f, Spider-Man 9.5M/82f không unresolved, Crazy Taxi 4→5. `verify_clean_room.sh` PASS, không SDK/JNI/NDK/C/C++ trong gói.
+- Re-validation clean-room: CatBoxMRE 30.1M/218f, RetroMRE 19.0M/28f, Whisk3D 33.3M/9f, Spider-Man 9.5M/82f, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
+- v0.8.4.1 alias pass: SYSTEM tick/resolver/callback, `vm_sscanf`, disk sandbox; GRAPHICS screen/image/load/mirror + `create_layer_ex`; FILE dual get-size, open/append chặt, `vm_resource_init`/`vm_res_load`. Corpus 76/76 first-class.
+- v0.8.4.1 timed runs: CatBoxMRE 30.8M/218f, RetroMRE 26.8M/39f, Whisk3D 33.3M/9f, Spider-Man 9.4M/83f `stubbedSymbols=[]`, Crazy Taxi 4→OK(10 AVM1)→5.
 
 ## 8. An toàn
 
@@ -98,3 +101,5 @@ là nguồn LCD duy nhất.
 - `VXP-Core-Library-v0.8.3-cleanroom/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`
 - `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
+- `VXP-Core-Library-v0.8.4.1/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
+- `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`

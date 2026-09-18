@@ -1,0 +1,1 @@
+[OK] ARM LDRD/STRD regression: 64-bit pair copied correctly

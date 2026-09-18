@@ -24,13 +24,14 @@ VXP file -> AndroidVxpCore -> Kotlin backend (ARM/MRE or Flash Lite)
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | First library split |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS sandbox, long regression |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC compat + 3 new ELF titles |
-| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Latest: Kotlin-only rebase, provenance/compliance docs |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Kotlin-only rebase, provenance/compliance docs |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | Latest: SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed first-class |
 
-Use **v0.8.3-cleanroom** for new integrations and any distribution build. See `VERSIONS.md`.
+Use **v0.8.4.1** for new integrations and any distribution build. See `VERSIONS.md`.
 
 ## 3. Backends
 
-- `ELF32 ARM` → Kotlin ARM/Thumb + MRE: supported, v0.8.3 adds GCC `gcc_entry` + `.init_array` bootstrap.
+- `ELF32 ARM` → Kotlin ARM/Thumb + MRE: supported, v0.8.3 adds GCC `gcc_entry` + `.init_array` bootstrap; v0.8.4.1 adds observed-alias first-class handlers.
 - Raw ARM + zlib (`RAW_ARM_ZLIB`, Gameloft) → Kotlin ARM/Thumb + MRE: supported.
 - Flash Lite `FWS/CWS` → Android Kotlin + SWF/AVM1: compatibility-first.
 - Unknown → detector returns `UNKNOWN`, no MREmu fallback.
@@ -54,7 +55,7 @@ dependencies {
 }
 ```
 
-Or use the prebuilt `dist/vxp-core-0.8.3-cleanroom.jar` as a file dependency.
+Or use the prebuilt `dist/vxp-core-0.8.4.1.jar` as a file dependency.
 
 ## 6. Usage
 
@@ -84,7 +85,9 @@ framebuffer is the only LCD source.
 - Crazy Taxi (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 via real AVM1 action.
 - v0.8.3 ELF titles: `CatBoxMRE` gameplay (218 frames / 28.3M instr), `RetroMRE` menu (18 frames / 11.8M instr, real `vm_find_*` + UCS2 NUL fix), `Whisk3D` 3D scene (9 frames / 33.3M instr).
 - v0.8.3 CPU fixes: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + long multiply, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` wildcard.
-- v0.8.3-cleanroom re-validation: CatBoxMRE 30.1M / 218f, RetroMRE 19.0M / 28f, Whisk3D 33.3M / 9f, Spider-Man 9.5M / 82f no unresolved symbols, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
+- v0.8.3-cleanroom re-validation: CatBoxMRE 30.1M / 218f, RetroMRE 19.0M / 28f, Whisk3D 33.3M / 9f, Spider-Man 9.5M / 82f, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
+- v0.8.4.1 alias pass: SYSTEM tick/resolver/callbacks, `vm_sscanf`, sandbox disk space; GRAPHICS screen/image/load/mirror aliases + `create_layer_ex`; FILE dual get-size, hardened open/append, `vm_resource_init`/`vm_res_load`. Corpus 76/76 first-class via `tools/observed_vxp_surface.py`.
+- v0.8.4.1 timed runs: CatBoxMRE 30.8M/218f, RetroMRE 26.8M/39f, Whisk3D 33.3M/9f, Spider-Man 9.4M/83f `stubbedSymbols=[]`, Crazy Taxi 4→OK(10 AVM1)→5.
 - Clean-room policy: no SDK headers/libs/catalogs, no MREmu, no JNI/NDK/C/C++; see `docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`.
 
 ## 8. Safety
@@ -99,3 +102,5 @@ framebuffer is the only LCD source.
 - `VXP-Core-Library-v0.8.3-cleanroom/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`
 - `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
+- `VXP-Core-Library-v0.8.4.1/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
+- `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`

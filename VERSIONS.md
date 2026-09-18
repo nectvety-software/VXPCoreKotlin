@@ -20,7 +20,8 @@ VXP file
 | `VXP-Core-Library-v0.8/` | `0.8.0` (`VxpCoreLibrary.VERSION`, `AndroidVxpCore.VERSION`) | `dist/vxp-core-0.8.0.jar` | Thư viện lõi đầu tiên, bỏ app/demo UI |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + SMS sandbox + regression dài |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3.jar` | Tương thích ELF/GCC + 3 title ELF mới |
-| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3-cleanroom.jar` | Mới nhất: rebase Kotlin-only, bỏ catalog SDK, + docs provenance/compliance |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebase Kotlin-only, bỏ catalog SDK, + docs provenance/compliance |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.4.1.jar` | Mới nhất: SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed first-class |
 
 > Ghi chú: `CHANGELOG v0.8.2` có nhắc patch `v0.8.1` (PNG, Thumb BLX immediate, App Manager, operator-code)
 > nhưng trong repo hiện chỉ lưu 2 gói `v0.8` và `v0.8.2`.
@@ -133,13 +134,49 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
   `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`, `validation/CLEANROOM_VALIDATION_v0.8.3.md`,
   thêm `build/GenericVxpProbe.kt` + `build/core_sources.txt`.
 
+### 5.5 v0.8.4.1 — SYSTEM/GRAPHICS/FILE_RESOURCE alias pass (clean-room)
+
+- SYSTEM: `vm_get_tick`, `vm_get_sym_entry`, `vm_reg_key/system_event/touch_callback`,
+  `vm_get_removable_driver` spelling, `vm_sscanf` subset, disk free-space từ sandbox.
+- GRAPHICS: `screen_w/h`, image buffer/property/load/release aliases,
+  `create_layer_ex` first-class, `vm_graphic_mirror` software path + safe no-op.
+- FILE_RESOURCE: dual `get_file_size`, open/append chặt, `vm_resource_init`/`vm_res_load` aliases.
+- Corpus quan sát (`tools/observed_vxp_surface.py`): 76 unique `vm_*` / 76 first-class / 0 missing —
+  chỉ là corpus coverage, không tuyên bố mọi VXP.
+- Timed runs: CatBoxMRE 30.787.098 instr / 218f, RetroMRE 26.838.009 / 39f,
+  Whisk3D 33.296.269 / 9f, Spider-Man 9.432.148 / 83f `stubbedSymbols=[]`,
+  CrazyTaxi menu 4 → OK (10 AVM1) → frame 5.
+- Thêm `SystemGraphicsFileResourceRegression.kt` + `docs/OBSERVED_COMPATIBILITY_SURFACE.md` (tổng 141 files).
+
 ## 6. Thay đổi chi tiết
+
+### v0.8.4.1
+- SYSTEM/GRAPHICS/FILE_RESOURCE first-class aliases như mục 5.5; giữ clean-room (không SDK/JNI/NDK/C/C++).
+- Tool `tools/observed_vxp_surface.py` quét `vm_*` trong binary VXP + đối chiếu handler Kotlin.
+- Thêm test `SystemGraphicsFileResourceRegression` + validation PNG/log (`validation/vxp/*`, `vxp2/*`, `regression/*`).
+- Giữ toàn bộ regression v0.8.3 (CatBoxMRE/RetroMRE/Whisk3D/Spider-Man/Crazy Taxi).
 
 ### v0.8.3-cleanroom
 - Rebase trên implementation Kotlin-only v0.8.3; xóa workflow catalog suy từ SDK proprietary và mọi wording SDK trong source/docs.
 - Thêm chính sách clean-room/provenance; handler tương thích chỉ giữ khi implement độc lập từ hành vi quan sát + regression tests.
 - Không JNI/NDK/C/C++/MREmu runtime; `vm_*` là compatibility identifiers do guest import, implement bằng Kotlin độc lập.
 - Commercial binaries không kèm trong gói; checklist phát hành thương mại (SAF import, sandbox, SMS/network opt-in, ads/Pro tách khỏi content).
+
+### v0.8.3
+- ELF `R_ARM_RELATIVE` sym-index-0; GOT/init-array VXP GCC relocate đúng.
+- Bootstrap `gcc_entry` (`vm_get_sym_entry`) + chạy `.init_array` trước `vm_main`.
+- Thumb `BLX register` (LR + interworking), PC high-register = current+4, thêm `STRH/LDRH` immediate.
+- ARM `CLZ`, `LDRD/STRD`, `UMULL/UMLAL/SMULL/SMLAL`; Operand2 đọc r15 = current+8 (fix veneer `ADD pc,r12,pc`).
+- `_vm_log_info/_vm_log_error` thành logging API; `vm_find_first/next/close` enumerate thật + wildcard; UCS2→ASCII giữ NUL.
+- Regression: CatBoxMRE gameplay, RetroMRE menu, Whisk3D 3D; giữ Spider-Man + Crazy Taxi.
+- Thêm 7 CPU regression tests + `validation/new_vxp/*`, `validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`, CSV + SHA256.
+
+### v0.8.2
+- `ArmCpu`: đủ nhóm Thumb ALU register: `ADC, SBC, ROR, NEG, CMN`.
+- `MreRuntime`: `strtoi` API thật; `vm_send_sms` sandbox failure.
+- Đồng bộ `VERSION = "0.8.2"` core + Android.
+- Thêm `PngDecoder.kt`, tests JVM + validation PNG (`spiderman_v082_*.png`, `thumb_*_regression.txt`, `png_decoder_regression.txt`).
+- Giữ hành vi Crazy Taxi frame 4 -> 5.
 
 ### v0.8.0
 - Tách thành thư viện, xóa app/demo UI khỏi deliverable.
@@ -149,33 +186,18 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
 - Crazy Taxi: Shape/PlaceObject2/RemoveObject2/JPEG3/timeline/ButtonCondAction/AVM1 Start.
 - Spider-Man: regression 6s không fault.
 
-### v0.8.3
-- ELF `R_ARM_RELATIVE` sym-index-0; GOT/init-array VXP GCC relocate đúng.
-- Bootstrap `gcc_entry` (`vm_get_sym_entry`) + chạy `.init_array` trước `vm_main`.
-- Thumb `BLX register` (LR + interworking), PC high-register = current+4, thêm `STRH/LDRH` immediate.
-- ARM `CLZ`, `LDRD/STRD`, `UMULL/UMLAL/SMULL/SMLAL`; Operand2 đọc r15 = current+8 (fix veneer `ADD pc,r12,pc`).
-- `_vm_log_info/_vm_log_error` thành logging API; `vm_find_first/next/close` enumerate thật + wildcard; UCS2→ASCII giữ NUL.
-- Regression: CatBoxMRE gameplay, RetroMRE menu, Whisk3D 3D; giữ Spider-Man + Crazy Taxi.
-- Thêm 7 CPU regression tests + `validation/new_vxp/*`, `validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`, CSV/SHA256.
-
-### v0.8.2
-- `ArmCpu`: đủ nhóm Thumb ALU register: `ADC, SBC, ROR, NEG, CMN`.
-- `MreRuntime`: `strtoi` API thật; `vm_send_sms` sandbox failure.
-- Đồng bộ `VERSION = "0.8.2"` core + Android.
-- Thêm `PngDecoder.kt`, tests JVM + validation PNG (`spiderman_v082_*.png`, `thumb_*_regression.txt`, `png_decoder_regression.txt`).
-- Giữ hành vi Crazy Taxi frame 4 -> 5.
-
 ## 7. Cấu trúc file khác biệt
 
 - v0.8.0: `16` file `vxp-core/*.kt` (chưa có `PngDecoder.kt`), không có `tests/`, `validation/` có 4 txt.
 - v0.8.2: thêm `vxp-core/.../PngDecoder.kt`, thêm `tests/jvm/*` (4 file) + `tests/android-graphics-jvm/*` (2 file), `validation/` mở rộng (7 txt + 3 png).
 - v0.8.3: thêm 7 CPU regression tests (tổng 11 tests/jvm), `validation/new_vxp/*` + `validation/all_vxp/*`, `ALL_VXP_COMPATIBILITY_v0.8.3.md`, CSV + SHA256 (tổng 116 files).
 - v0.8.3-cleanroom: + `NOTICE-CLEANROOM.txt`, `verify_clean_room.sh`, `build/GenericVxpProbe.kt`, docs `CLEAN_ROOM_POLICY/PROVENANCE/COMMERCIAL_DISTRIBUTION_CHECKLIST`, `validation/CLEANROOM_VALIDATION_v0.8.3.md` + `validation/cleanroom_vxp/*` (tổng 90 files).
+- v0.8.4.1: + `docs/OBSERVED_COMPATIBILITY_SURFACE.md`, `tools/observed_vxp_surface.py`, test `SystemGraphicsFileResourceRegression`, validation `COMPATIBILITY_v0.8.4.1.md` + `observed_surface_v0.8.4.1.txt` + `validation/vxp/*`, `vxp2/*`, `regression/*` (tổng 141 files).
 
 ## 8. Nên dùng bản nào?
 
-- Dùng `v0.8.3-cleanroom` cho mọi tích hợp mới và mọi bản phát hành/phân phối: tương đương compat v0.8.3 nhưng provenance sạch, có checklist thương mại.
-- `v0.8.3` thường giữ lại để đối chiếu trước rebase clean-room.
+- Dùng `v0.8.4.1` cho mọi tích hợp mới và mọi bản phát hành/phân phối: superset clean-room của v0.8.3 + alias SYSTEM/GRAPHICS/FILE_RESOURCE, corpus 76/76.
+- `v0.8.3-cleanroom` giữ lại để đối chiếu trước alias pass; `v0.8.3` thường để đối chiếu trước rebase.
 - Chỉ tham khảo `v0.8.0` khi cần đối chiếu sha frame cũ (`7613e735…`, `fbf54d2f…`) hoặc hành vi trước Thumb-ALU fix.
 - `v0.8.2` giữ lại để đối chiếu regression Spider-Man dài 23.5M insn trước thay đổi CPU v0.8.3.
 
@@ -186,6 +208,8 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
 - `VXP-Core-Library-v0.8.3/README.md`, `CHANGELOG.md`, `docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.3-cleanroom/README.md`, `CHANGELOG.md`, `NOTICE-CLEANROOM.txt`
 - `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
+- `VXP-Core-Library-v0.8.4.1/README.md`, `CHANGELOG.md`, `docs/OBSERVED_COMPATIBILITY_SURFACE.md`
+- `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`, `validation/observed_surface_v0.8.4.1.txt`
 - `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`, `validation/new_vxp/COMPATIBILITY_v0.8.3.md`
 - `vxp-core/.../VxpLibrary.kt: VERSION`, `vxp-core-android/.../AndroidVxpCore.kt: VERSION`
 - `validation/spiderman_v08.txt`, `spiderman_v082.txt`, `crazytaxi_v08.txt`, `crazytaxi_v082.txt`

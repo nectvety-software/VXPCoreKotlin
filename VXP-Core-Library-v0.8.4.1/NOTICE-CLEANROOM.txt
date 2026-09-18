@@ -1,0 +1,10 @@
+VXP Core Library v0.8.3 Clean-Room Edition
+
+Independent Kotlin implementation. No proprietary vendor SDK headers, libraries,
+source files, generated SDK catalogs, MREmu code, JNI runtime, NDK runtime, or
+C/C++ guest-execution code are included in this package.
+
+Names beginning with vm_ are compatibility identifiers requested by guest VXP
+binaries and are resolved by independently written Kotlin handlers.
+
+Commercial game/application VXP binaries are not included.

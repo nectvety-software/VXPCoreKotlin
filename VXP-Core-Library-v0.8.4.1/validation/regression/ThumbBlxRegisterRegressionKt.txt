@@ -1,0 +1,2 @@
+== ThumbBlxRegisterRegressionKt ==
+[OK] Thumb BLX register: LR=0x1003, ARM target, returns to Thumb 0x1002
