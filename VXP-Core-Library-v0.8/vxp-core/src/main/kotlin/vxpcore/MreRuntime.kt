@@ -227,7 +227,7 @@ class MreRuntime(
         api("vm_sim_get_active_sim_card") { it.r[0] = 0 }
         api("vm_set_active_sim_card") { it.r[0] = 0 }
         api("vm_graphic_mirror") { cpu ->
-            // Signature varies between MRE SDK revisions. v0.8 keeps the operation
+            // Signature varies between platform SDK revisions. v0.8 keeps the operation
             // side-effect free until the argument pattern is confidently identified.
             // Registering it directly avoids treating a known compatibility no-op as unresolved.
             cpu.r[0] = 0

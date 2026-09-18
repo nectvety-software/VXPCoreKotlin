@@ -1,6 +1,6 @@
 # VXP Core Library v0.8.4.2 — Clean-Room Kotlin Edition
 
-Thư viện lõi `.vxp` độc lập để nhúng vào UI Android hiện có. Runtime là **Kotlin-only / clean-room**: không MREmu, JNI, NDK, CMake, C/C++ guest runtime, proprietary vendor SDK headers/libraries, hay catalog sinh từ SDK proprietary.
+Thư viện lõi `.vxp` độc lập để nhúng vào UI Android hiện có. Runtime là **Kotlin-only / clean-room**: không runtime emulator bên thứ ba, JNI, NDK, CMake, C/C++ guest runtime, proprietary vendor SDK headers/libraries, hay catalog sinh từ SDK proprietary.
 
 > Đây là chính sách kỹ thuật/provenance, không phải tư vấn pháp lý.
 
@@ -131,7 +131,7 @@ Xem `validation/COMPATIBILITY_v0.8.4.2.md`.
 
 - Không bundle commercial `.vxp` trong release.
 - Không dùng/copy vendor SDK headers, libraries, docs dump hoặc generated SDK catalog.
-- Không dùng MREmu hoặc source của emulator khác.
+- Không dùng/copy vendor SDK headers, libraries, docs dump hoặc generated SDK catalog; không dùng source của emulator khác.
 - Compatibility patch phải dựa trên binary metadata/import names, guest trace, I/O regression hoặc public non-proprietary specs.
 
 Xem `docs/CLEAN_ROOM_POLICY.md` và `docs/PROVENANCE.md`.

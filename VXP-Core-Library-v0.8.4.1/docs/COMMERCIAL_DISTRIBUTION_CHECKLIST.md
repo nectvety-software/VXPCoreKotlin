@@ -6,7 +6,7 @@ Engineering checklist for distributing an Android VXP emulator product. This is 
 
 - [ ] Ship only independently authored Kotlin source/binaries for the emulator runtime.
 - [ ] Do not bundle proprietary vendor SDK headers, libraries, tools, generated SDK catalogs or documentation dumps.
-- [ ] Do not include MREmu source/binaries or code copied from another emulator.
+- [ ] Do not include third-party emulator source/binaries or code copied from another emulator.
 - [ ] Keep a provenance record for compatibility changes and regression tests.
 
 ## Content separation

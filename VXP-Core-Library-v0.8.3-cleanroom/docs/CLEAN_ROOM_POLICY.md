@@ -6,7 +6,7 @@ This project is an independent Kotlin implementation of a VXP execution environm
 
 - Do not copy or redistribute proprietary vendor SDK headers, libraries, source code, binaries, documentation dumps, or generated catalogs derived from proprietary SDK files.
 - Do not link against vendor runtime libraries.
-- Do not use MREmu or any third-party emulator implementation as runtime code.
+- Do not use any third-party emulator implementation as runtime code.
 - Do not use JNI/NDK/C/C++ for guest execution in this project.
 - Guest ARM/Thumb code is interpreted by Kotlin code in `vxp-core`.
 - Flash Lite compatibility is implemented in Kotlin/Android code in `vxp-core-android`.

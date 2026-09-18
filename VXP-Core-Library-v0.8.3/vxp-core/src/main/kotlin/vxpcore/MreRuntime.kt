@@ -192,7 +192,7 @@ class MreRuntime(
             val text = runCatching { memory.readCString(p) }.getOrElse { "<bad string @0x${p.toUInt().toString(16)}>" }
             println("[VXP] $text")
         }
-        // GCC MRE SDK logging aliases. Their first argument is a C format/string pointer;
+        // GCC toolchain logging aliases. Their first argument is a C format/string pointer;
         // keep the implementation side-effect free apart from debug output and do not
         // treat them as unresolved compatibility stubs. Varargs are intentionally not
         // formatted here because guest logging must never affect execution semantics.
@@ -295,7 +295,7 @@ class MreRuntime(
             } else cpu.r[0] = -1
         }
         api("vm_graphic_mirror") { cpu ->
-            // Signature varies between MRE SDK revisions. v0.8 keeps the operation
+            // Signature varies between platform SDK revisions. v0.8 keeps the operation
             // side-effect free until the argument pattern is confidently identified.
             // Registering it directly avoids treating a known compatibility no-op as unresolved.
             cpu.r[0] = 0
@@ -395,7 +395,7 @@ class MreRuntime(
             cpu.r[0] = graphics.setFont(arg(cpu, 0))
             if (cpu.trace) println("[TEXT] font=${graphics.text.currentFontId()}")
         }
-        // MRE SDK variants use arg4 either as a character count or a pixel width.
+        // Platform variants use arg4 either as a character count or a pixel width.
         // GCC wrappers commonly pass strlen/UCS2 length; some ARMCC titles pass maxWidth.
         api("vm_graphic_textout") { cpu ->
             val full = readUcs2Compat(arg(cpu, 3))

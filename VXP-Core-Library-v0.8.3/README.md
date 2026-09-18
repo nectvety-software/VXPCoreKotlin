@@ -54,7 +54,7 @@ Không gọi `NativeVxpBridge`, không `System.loadLibrary`, không chạy guest
 | ELF32 ARM | Kotlin ARM/Thumb + MRE | Có |
 | Gameloft raw ARM + zlib | Kotlin ARM/Thumb + MRE | Có |
 | Flash Lite `FWS/CWS` | Android Kotlin + SWF/AVM1 | Có, mức compatibility-first |
-| Unknown/proprietary khác | Detector | Trả `UNKNOWN` thay vì fallback MREmu |
+| Unknown/proprietary khác | Detector | Trả `UNKNOWN` thay vì fallback sang emulator khác |
 
 ## Regression thực tế
 

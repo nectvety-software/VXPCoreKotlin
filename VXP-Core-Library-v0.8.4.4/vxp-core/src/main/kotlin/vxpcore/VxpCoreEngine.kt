@@ -61,7 +61,7 @@ class VxpCoreEngine(
                     error(
                         "Flash Lite renderer is not yet ported to the Android host-neutral renderer " +
                             "(SWF v${info.version}, ${info.width}x${info.height}, ${info.frameCount} frames). " +
-                            "The parser/probe is present; do not fall back to MREmu/JNI."
+                            "The parser/probe is present; do not fall back to an external emulator/JNI."
                     )
                 }
                 Backend.UNKNOWN -> error("Unsupported/unknown VXP container")

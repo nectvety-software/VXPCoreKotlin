@@ -1,6 +1,6 @@
 # VXP-Core v0.8.4.1 — FILE_RESOURCE focused validation
 
-This pass keeps the clean-room Kotlin runtime and concentrates on guest file/resource behavior. No proprietary MRE SDK headers, libraries or generated SDK catalog are required.
+This pass keeps the clean-room Kotlin runtime and concentrates on guest file/resource behavior. No proprietary vendor SDK headers, libraries or generated SDK catalog are required.
 
 ## File I/O behavior covered
 

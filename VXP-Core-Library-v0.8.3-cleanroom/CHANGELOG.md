@@ -4,7 +4,7 @@
 - Removed SDK-derived catalog workflow and proprietary-SDK wording from source/docs.
 - Added clean-room contribution/provenance policy.
 - Kept compatibility handlers only where independently implemented from observed guest behavior and regression tests.
-- No JNI/NDK/C/C++/MREmu runtime.
+- No JNI/NDK/C/C++/third-party-emulator runtime.
 
 # Changelog
 
