@@ -1,0 +1,2 @@
+menuFrame=4 size=176x220 shapes=25 sprites=12 bitmaps=5 buttons=7
+afterOkFrame=5 avm1Actions=10 inputEvents=1 playing=true

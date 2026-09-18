@@ -1,0 +1,14 @@
+===== /mnt/data/The Amazing Spider-Man - The Daily Bugle(1).vxp =====
+backend=RAW_ARM_ZLIB
+instructions=6870936
+frames=75
+events=76
+stubbed=
+frame=240x320 serial=75 sha256=7613e735b14923b10b6b4c8992c1e2572f2e540640882781d39a8c0505ca432a
+===== /mnt/data/vxp_all/The Amazing Spider-Man - The Daily Bugle.vxp =====
+backend=RAW_ARM_ZLIB
+instructions=6868260
+frames=73
+events=74
+stubbed=
+frame=240x320 serial=73 sha256=7613e735b14923b10b6b4c8992c1e2572f2e540640882781d39a8c0505ca432a

@@ -22,13 +22,14 @@ VXP -> AndroidVxpCore -> Kotlin 后端（ARM/MRE 或 Flash Lite）
 | 目录 | 版本 | 产物 | 说明 |
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | 首次拆分为库 |
-| `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | 最新：Thumb ALU、SMS 沙箱、长回归 |
+| `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU、SMS 沙箱、长回归 |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | 最新：ELF/GCC 兼容 + 3 个新 ELF 标题 |
 
-新项目请使用 **v0.8.2**。详见 `VERSIONS.md`。
+新项目请使用 **v0.8.3**。详见 `VERSIONS.md`。
 
 ## 3. 后端支持
 
-- `ELF32 ARM` → Kotlin ARM/Thumb + MRE：支持。
+- `ELF32 ARM` → Kotlin ARM/Thumb + MRE：支持，v0.8.3 新增 GCC `gcc_entry` + `.init_array` 启动。
 - Raw ARM + zlib（`RAW_ARM_ZLIB`，Gameloft）→ Kotlin ARM/Thumb + MRE：支持。
 - Flash Lite `FWS/CWS` → Android Kotlin + SWF/AVM1：兼容优先。
 - 未知格式 → 检测器返回 `UNKNOWN`，不回退 MREmu。
@@ -52,7 +53,7 @@ dependencies {
 }
 ```
 
-也可直接使用预构建的 `dist/vxp-core-0.8.2.jar`。
+也可直接使用预构建的 `dist/vxp-core-0.8.3.jar`。
 
 ## 6. 用法
 
@@ -79,6 +80,8 @@ session.stop(); session.close()
 
 - 蜘蛛侠（`RAW_ARM_ZLIB`）：23,524,795 指令 / 425 帧 / 440 事件 / 424 定时器，240x320 RGB565，无故障，`stubbedSymbols = []`。
 - Crazy Taxi（`FLASH_LITE`）：176x220 @20fps，35 帧，菜单第 4 帧 → OK → 真实 AVM1 跳到第 5 帧。
+- v0.8.3 新增 3 个 ELF：`CatBoxMRE` 游戏（218 帧 / 28.3M 指令）、`RetroMRE` 菜单（18 帧 / 11.8M 指令，真实 `vm_find_*` + UCS2 NUL 修复）、`Whisk3D` 3D 场景（9 帧 / 33.3M 指令）。
+- v0.8.3 CPU 修复：`R_ARM_RELATIVE` sym-0、`gcc_entry`/`.init_array`、Thumb BLX-reg + PC(+4) + STRH/LDRH、ARM CLZ + LDRD/STRD + 长乘法、Operand2 PC(+8)、`_vm_log_*`、`vm_find_*` 通配符。
 
 ## 8. 安全
 
@@ -88,4 +91,5 @@ session.stop(); session.close()
 
 - https://qeafivels.com/
 - `../VERSIONS.md`、`../README.md`
-- `VXP-Core-Library-v0.8.2/docs/INTEGRATE_EXISTING_UI.md`、`docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`、`docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`

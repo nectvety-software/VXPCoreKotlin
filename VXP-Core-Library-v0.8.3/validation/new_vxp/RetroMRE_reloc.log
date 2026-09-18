@@ -1,0 +1,11 @@
+FILE=RetroMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+[WARN] vm_main returned without vm_reg_sysevt_callback(); no CREATE/PAINT callback can be delivered
+STATE=Stopped(result=VxpRunResult(backend=ELF_ARM, exitCode=0, instructions=23, frames=0, events=0, timerCallbacks=0, timedOut=false, resolvedSymbols=[], stubbedSymbols=[__deregister_frame_info, __register_frame_info, __fini_array_end, __fini_array_start, __libc_fini]))
+FRAME_CALLBACKS=0
+LAST_FRAME=nullxnull serial=null
+RESULT backend=ELF_ARM exit=0 instructions=23 frames=0 events=0 timers=0 timedOut=false
+RESOLVED=0
+STUBBED=__deregister_frame_info,__register_frame_info,__fini_array_end,__fini_array_start,__libc_fini

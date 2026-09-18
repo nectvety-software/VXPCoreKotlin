@@ -1,0 +1,20 @@
+FILE=RetroMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+STATE=Failed(backend=ELF_ARM, message=Guest CPU fault at PC=0x2adb6 mode=Thumb: Unsupported Thumb instruction at PC=0x0002adb6, op=0x8053 [r0=0x43 r1=0x2a899 r2=0x40ff624 r3=0x5c sp=0x40ff5f8 lr=0x38871], cause=java.lang.IllegalStateException: Guest CPU fault at PC=0x2adb6 mode=Thumb: Unsupported Thumb instruction at PC=0x0002adb6, op=0x8053 [r0=0x43 r1=0x2a899 r2=0x40ff624 r3=0x5c sp=0x40ff5f8 lr=0x38871])
+FRAME_CALLBACKS=0
+LAST_FRAME=nullxnull serial=null
+FAILED=Guest CPU fault at PC=0x2adb6 mode=Thumb: Unsupported Thumb instruction at PC=0x0002adb6, op=0x8053 [r0=0x43 r1=0x2a899 r2=0x40ff624 r3=0x5c sp=0x40ff5f8 lr=0x38871]
+java.lang.IllegalStateException: Guest CPU fault at PC=0x2adb6 mode=Thumb: Unsupported Thumb instruction at PC=0x0002adb6, op=0x8053 [r0=0x43 r1=0x2a899 r2=0x40ff624 r3=0x5c sp=0x40ff5f8 lr=0x38871]
+	at vxpcore.ArmCpu.step(ArmCpu.kt:92)
+	at vxpcore.ArmCpu.callGuest(ArmCpu.kt:66)
+	at vxpcore.VxpCoreEngine.runElf(VxpCoreEngine.kt:179)
+	at vxpcore.VxpCoreEngine.run(VxpCoreEngine.kt:57)
+	at vxpcore.VxpSession.start$lambda$2(VxpLibrary.kt:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.IllegalStateException: Unsupported Thumb instruction at PC=0x0002adb6, op=0x8053
+	at vxpcore.ArmCpu.unsupportedThumb(ArmCpu.kt:758)
+	at vxpcore.ArmCpu.stepThumb(ArmCpu.kt:654)
+	at vxpcore.ArmCpu.step(ArmCpu.kt:85)
+	... 5 more

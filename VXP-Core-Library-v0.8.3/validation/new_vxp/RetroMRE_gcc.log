@@ -1,0 +1,24 @@
+FILE=RetroMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+STATE=Failed(backend=ELF_ARM, message=Guest CPU fault at PC=0x38b3a mode=Thumb: Unmapped guest memory @ 0x67080000 size=1 [r0=0x3a022 r1=0x14 r2=0x67080000 r3=0x55412 sp=0x40fffb8 lr=0x2a6eb], cause=java.lang.IllegalStateException: Guest CPU fault at PC=0x38b3a mode=Thumb: Unmapped guest memory @ 0x67080000 size=1 [r0=0x3a022 r1=0x14 r2=0x67080000 r3=0x55412 sp=0x40fffb8 lr=0x2a6eb])
+FRAME_CALLBACKS=0
+LAST_FRAME=nullxnull serial=null
+FAILED=Guest CPU fault at PC=0x38b3a mode=Thumb: Unmapped guest memory @ 0x67080000 size=1 [r0=0x3a022 r1=0x14 r2=0x67080000 r3=0x55412 sp=0x40fffb8 lr=0x2a6eb]
+java.lang.IllegalStateException: Guest CPU fault at PC=0x38b3a mode=Thumb: Unmapped guest memory @ 0x67080000 size=1 [r0=0x3a022 r1=0x14 r2=0x67080000 r3=0x55412 sp=0x40fffb8 lr=0x2a6eb]
+	at vxpcore.ArmCpu.step(ArmCpu.kt:92)
+	at vxpcore.ArmCpu.callGuest(ArmCpu.kt:66)
+	at vxpcore.VxpCoreEngine.runElf(VxpCoreEngine.kt:179)
+	at vxpcore.VxpCoreEngine.run(VxpCoreEngine.kt:57)
+	at vxpcore.VxpSession.start$lambda$2(VxpLibrary.kt:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.IllegalStateException: Unmapped guest memory @ 0x67080000 size=1
+	at vxpcore.GuestMemory.region(GuestMemory.kt:44)
+	at vxpcore.GuestMemory.region$default(GuestMemory.kt:43)
+	at vxpcore.GuestMemory.read8(GuestMemory.kt:65)
+	at vxpcore.GuestMemory.read32(GuestMemory.kt:74)
+	at vxpcore.GuestMemory.read32$default(GuestMemory.kt:73)
+	at vxpcore.ArmCpu.stepThumb(ArmCpu.kt:544)
+	at vxpcore.ArmCpu.step(ArmCpu.kt:85)
+	... 5 more

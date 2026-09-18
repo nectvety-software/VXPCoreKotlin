@@ -1,0 +1,22 @@
+FILE=Whisk3D.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+STATE=Failed(backend=ELF_ARM, message=Guest CPU fault at PC=0x22bb8 mode=Thumb: Unmapped guest memory @ 0x3ffffff [r0=0xc8 r1=0x0 r2=0x3a r3=0x0 sp=0x40ffaa8 lr=0x22bab], cause=java.lang.IllegalStateException: Guest CPU fault at PC=0x22bb8 mode=Thumb: Unmapped guest memory @ 0x3ffffff [r0=0xc8 r1=0x0 r2=0x3a r3=0x0 sp=0x40ffaa8 lr=0x22bab])
+FRAME_CALLBACKS=0
+LAST_FRAME=nullxnull serial=null
+FAILED=Guest CPU fault at PC=0x22bb8 mode=Thumb: Unmapped guest memory @ 0x3ffffff [r0=0xc8 r1=0x0 r2=0x3a r3=0x0 sp=0x40ffaa8 lr=0x22bab]
+java.lang.IllegalStateException: Guest CPU fault at PC=0x22bb8 mode=Thumb: Unmapped guest memory @ 0x3ffffff [r0=0xc8 r1=0x0 r2=0x3a r3=0x0 sp=0x40ffaa8 lr=0x22bab]
+	at vxpcore.ArmCpu.step(ArmCpu.kt:92)
+	at vxpcore.ArmCpu.callGuest(ArmCpu.kt:66)
+	at vxpcore.MreEventLoop.run(MreEventLoop.kt:54)
+	at vxpcore.VxpCoreEngine.runElf(VxpCoreEngine.kt:189)
+	at vxpcore.VxpCoreEngine.run(VxpCoreEngine.kt:57)
+	at vxpcore.VxpSession.start$lambda$2(VxpLibrary.kt:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.IllegalStateException: Unmapped guest memory @ 0x3ffffff
+	at vxpcore.GuestMemory.write8(GuestMemory.kt:80)
+	at vxpcore.GuestMemory.write8$default(GuestMemory.kt:79)
+	at vxpcore.ArmCpu.stepThumb(ArmCpu.kt:578)
+	at vxpcore.ArmCpu.step(ArmCpu.kt:85)
+	... 6 more

@@ -1,0 +1,17 @@
+FILE=CatBoxMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+INJECT=OK
+INJECT=DOWN
+INJECT=OK
+INJECT=LEFT_SOFT
+INJECT=RIGHT_SOFT
+INJECT=UP
+INJECT=OK
+STATE=Stopped(result=VxpRunResult(backend=ELF_ARM, exitCode=0, instructions=29515871, frames=212, events=119, timerCallbacks=103, timedOut=true, resolvedSymbols=[vm_malloc, vm_realloc, vm_free, vm_reg_sysevt_callback, vm_reg_keyboard_callback, vm_reg_pen_callback, vm_get_tick_count, vm_exit_app, vm_res_init, vm_load_resource, vm_create_timer, vm_delete_timer, vm_graphic_get_screen_width, vm_graphic_get_screen_height, vm_graphic_create_layer, vm_graphic_delete_layer, vm_graphic_set_clip, vm_graphic_set_font, vm_graphic_get_layer_buffer, vm_graphic_fill_rect, vm_graphic_textout, vm_graphic_get_string_width, vm_graphic_get_character_height, vm_graphic_line, vm_graphic_flush_layer, vm_graphic_load_image, vm_graphic_get_img_property, vm_graphic_get_canvas_buffer, vm_graphic_release_canvas, vm_get_system_driver, vm_get_removeable_driver, vm_file_open, vm_file_close, vm_file_read, vm_file_write, vm_file_commit, vm_file_getfilesize, vm_file_delete, vm_file_rename, vm_audio_play_bytes_no_block, vm_audio_stop_all, vm_audio_is_app_playing, vm_set_volume, _vm_log_info, _vm_log_error], stubbedSymbols=[__libc_fini, __fini_array_end, __fini_array_start, __gnu_Unwind_Find_exidx, __cxa_call_unexpected, __cxa_begin_cleanup, __cxa_type_match]))
+FRAME_CALLBACKS=212
+LAST_FRAME=240x320 serial=212
+RESULT backend=ELF_ARM exit=0 instructions=29515871 frames=212 events=119 timers=103 timedOut=true
+RESOLVED=45
+STUBBED=__libc_fini,__fini_array_end,__fini_array_start,__gnu_Unwind_Find_exidx,__cxa_call_unexpected,__cxa_begin_cleanup,__cxa_type_match

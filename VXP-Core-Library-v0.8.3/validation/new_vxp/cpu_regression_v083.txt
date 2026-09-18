@@ -1,0 +1,7 @@
+[OK] ARM Operand2 PC regression: ADD pc,r12,pc -> 0x100108
+[OK] ARM long multiply regression: UMULL + SMULL
+[OK] ARM LDRD/STRD regression: 64-bit pair copied correctly
+[OK] ARM CLZ regression: clz(0x8)=28, clz(0)=32
+[OK] Thumb BLX register: LR=0x1003, ARM target, returns to Thumb 0x1002
+[OK] Thumb immediate STRH/LDRH
+[OK] Thumb high-register PC semantics: ADD r3,PC used current+4

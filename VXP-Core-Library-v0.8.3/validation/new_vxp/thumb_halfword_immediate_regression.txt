@@ -1,0 +1,1 @@
+[OK] Thumb immediate STRH/LDRH

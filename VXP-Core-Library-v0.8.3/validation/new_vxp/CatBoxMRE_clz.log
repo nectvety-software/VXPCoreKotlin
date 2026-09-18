@@ -1,0 +1,20 @@
+FILE=CatBoxMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+STATE=Failed(backend=ELF_ARM, message=Guest CPU fault at PC=0x17c48 mode=ARM: Unsupported ARM STRD/LDRD extra transfer at PC=0x00017c48, insn=0xe1c020d0 [r0=0x2000048 r1=0x2000248 r2=0x2000000 r3=0xffffd8ee sp=0x40fffb0 lr=0x17c44], cause=java.lang.IllegalStateException: Guest CPU fault at PC=0x17c48 mode=ARM: Unsupported ARM STRD/LDRD extra transfer at PC=0x00017c48, insn=0xe1c020d0 [r0=0x2000048 r1=0x2000248 r2=0x2000000 r3=0xffffd8ee sp=0x40fffb0 lr=0x17c44])
+FRAME_CALLBACKS=0
+LAST_FRAME=nullxnull serial=null
+FAILED=Guest CPU fault at PC=0x17c48 mode=ARM: Unsupported ARM STRD/LDRD extra transfer at PC=0x00017c48, insn=0xe1c020d0 [r0=0x2000048 r1=0x2000248 r2=0x2000000 r3=0xffffd8ee sp=0x40fffb0 lr=0x17c44]
+java.lang.IllegalStateException: Guest CPU fault at PC=0x17c48 mode=ARM: Unsupported ARM STRD/LDRD extra transfer at PC=0x00017c48, insn=0xe1c020d0 [r0=0x2000048 r1=0x2000248 r2=0x2000000 r3=0xffffd8ee sp=0x40fffb0 lr=0x17c44]
+	at vxpcore.ArmCpu.step(ArmCpu.kt:92)
+	at vxpcore.ArmCpu.callGuest(ArmCpu.kt:66)
+	at vxpcore.VxpCoreEngine.runElf(VxpCoreEngine.kt:179)
+	at vxpcore.VxpCoreEngine.run(VxpCoreEngine.kt:57)
+	at vxpcore.VxpSession.start$lambda$2(VxpLibrary.kt:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.lang.IllegalStateException: Unsupported ARM STRD/LDRD extra transfer at PC=0x00017c48, insn=0xe1c020d0
+	at vxpcore.ArmCpu.unsupported(ArmCpu.kt:777)
+	at vxpcore.ArmCpu.stepArm(ArmCpu.kt:254)
+	at vxpcore.ArmCpu.step(ArmCpu.kt:85)
+	... 5 more

@@ -1,0 +1,16 @@
+FILE=RetroMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+INJECT=OK
+INJECT=DOWN
+STATE=Failed(backend=ELF_ARM, message=Guest callback instruction limit exceeded (50000000), function=0x383cd, PC=0x2af42, cause=java.lang.IllegalStateException: Guest callback instruction limit exceeded (50000000), function=0x383cd, PC=0x2af42)
+FRAME_CALLBACKS=0
+LAST_FRAME=nullxnull serial=null
+FAILED=Guest callback instruction limit exceeded (50000000), function=0x383cd, PC=0x2af42
+java.lang.IllegalStateException: Guest callback instruction limit exceeded (50000000), function=0x383cd, PC=0x2af42
+	at vxpcore.ArmCpu.callGuest(ArmCpu.kt:64)
+	at vxpcore.VxpCoreEngine.runElf(VxpCoreEngine.kt:184)
+	at vxpcore.VxpCoreEngine.run(VxpCoreEngine.kt:57)
+	at vxpcore.VxpSession.start$lambda$2(VxpLibrary.kt:102)
+	at java.base/java.lang.Thread.run(Thread.java:1583)

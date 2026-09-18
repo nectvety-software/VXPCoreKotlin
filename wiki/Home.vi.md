@@ -22,13 +22,14 @@ VXP -> AndroidVxpCore -> backend Kotlin (ARM/MRE hoặc Flash Lite)
 | Thư mục | Version | Artifact | Ghi chú |
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | Tách thư viện lần đầu |
-| `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Mới nhất: Thumb ALU, SMS sandbox, regression dài |
+| `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS sandbox, regression dài |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | Mới nhất: tương thích ELF/GCC + 3 title ELF mới |
 
-Tích hợp mới dùng **v0.8.2**. Xem `VERSIONS.md`.
+Tích hợp mới dùng **v0.8.3**. Xem `VERSIONS.md`.
 
 ## 3. Backend
 
-- `ELF32 ARM` → ARM/Thumb Kotlin + MRE: có.
+- `ELF32 ARM` → ARM/Thumb Kotlin + MRE: có, v0.8.3 thêm bootstrap GCC `gcc_entry` + `.init_array`.
 - Raw ARM + zlib (`RAW_ARM_ZLIB`, Gameloft) → ARM/Thumb Kotlin + MRE: có.
 - Flash Lite `FWS/CWS` → Kotlin Android + SWF/AVM1: mức compatibility-first.
 - Lạ → detector trả `UNKNOWN`, không fallback MREmu.
@@ -52,7 +53,7 @@ dependencies {
 }
 ```
 
-Hoặc dùng `dist/vxp-core-0.8.2.jar` dựng sẵn.
+Hoặc dùng `dist/vxp-core-0.8.3.jar` dựng sẵn.
 
 ## 6. Sử dụng
 
@@ -80,6 +81,8 @@ là nguồn LCD duy nhất.
 
 - Spider-Man (`RAW_ARM_ZLIB`): 23.524.795 insn / 425 frames / 440 events / 424 timers, 240x320 RGB565, không fault, `stubbedSymbols = []`.
 - Crazy Taxi (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 bằng AVM1 thật.
+- v0.8.3 thêm 3 title ELF: `CatBoxMRE` gameplay (218 frames / 28.3M instr), `RetroMRE` menu (18 frames / 11.8M instr, `vm_find_*` thật + fix UCS2 NUL), `Whisk3D` scene 3D (9 frames / 33.3M instr).
+- Fix CPU v0.8.3: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + nhân dài, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` wildcard.
 
 ## 8. An toàn
 
@@ -89,4 +92,5 @@ là nguồn LCD duy nhất.
 
 - https://qeafivels.com/
 - `../VERSIONS.md`, `../README.md`
-- `VXP-Core-Library-v0.8.2/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`

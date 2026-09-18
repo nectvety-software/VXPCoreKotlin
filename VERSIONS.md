@@ -18,7 +18,8 @@ VXP file
 | Thư mục | Version code | `dist` | Trạng thái |
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` (`VxpCoreLibrary.VERSION`, `AndroidVxpCore.VERSION`) | `dist/vxp-core-0.8.0.jar` | Thư viện lõi đầu tiên, bỏ app/demo UI |
-| `VXP-Core-Library-v0.8.2/` | `0.8.2` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.2.jar` | Bản mới nhất, sửa Thumb ALU + SMS sandbox + regression dài |
+| `VXP-Core-Library-v0.8.2/` | `0.8.2` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + SMS sandbox + regression dài |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3.jar` | Mới nhất: tương thích ELF/GCC + 3 title ELF mới |
 
 > Ghi chú: `CHANGELOG v0.8.2` có nhắc patch `v0.8.1` (PNG, Thumb BLX immediate, App Manager, operator-code)
 > nhưng trong repo hiện chỉ lưu 2 gói `v0.8` và `v0.8.2`.
@@ -29,8 +30,8 @@ VXP file
 |---|---|
 | `vxp-core` | Lõi Kotlin/JVM trung lập: ELF ARM + RAW_ARM_ZLIB/Gameloft, MRE runtime, heap, file, graphics RGB565, input/timer |
 | `vxp-core-android` | Host Android Kotlin-only: Flash Lite/SWF renderer bằng `android.graphics`, AVM1 menu/input, system font rasterizer, `FrameSnapshot -> Bitmap` |
-| `tests/jvm` (chỉ v0.8.2) | `SpiderManLibraryTest`, `ThumbAluRegression`, `ThumbBlxRegression`, `PngDecoderRegression` |
-| `tests/android-graphics-jvm` (chỉ v0.8.2) | `CrazyTaxiAndroidBackendTest` + `android.graphics` stubs để compile-test trên JVM |
+| `tests/jvm` (chỉ v0.8.2+) | `SpiderManLibraryTest`, `ThumbAluRegression`, `ThumbBlxRegression`, `PngDecoderRegression` (+ v0.8.3: `ArmClz/ArmDoubleword/ArmLongMultiply/ArmPcOperand/ThumbBlxRegister/ThumbHalfwordImmediate/ThumbPcSemantics`) |
+| `tests/android-graphics-jvm` (chỉ v0.8.2+) | `CrazyTaxiAndroidBackendTest` + `android.graphics` stubs để compile-test trên JVM |
 | `validation/` | Log chạy thật, sha256 frame, ảnh PNG |
 | `docs/` | `TEST_RESULTS.md`, `INTEGRATE_EXISTING_UI.md` |
 
@@ -42,12 +43,12 @@ implementation(project(":vxp-core-android")) // tự kéo theo :vxp-core
 
 ## 3. Backend hỗ trợ
 
-| Dạng VXP | Backend | v0.8.0 | v0.8.2 |
-|---|---|---|---|
-| `ELF32 ARM` | Kotlin ARM/Thumb + MRE | Có | Có |
-| Gameloft raw ARM + zlib (`RAW_ARM_ZLIB`) | Kotlin ARM/Thumb + MRE | Có | Có |
-| Flash Lite `FWS/CWS` | Android Kotlin + SWF/AVM1 | Có, compatibility-first | Có, giữ nguyên + test JVM stubs |
-| Unknown/proprietary | Detector | Trả `UNKNOWN`, không fallback MREmu | Giữ nguyên |
+| Dạng VXP | Backend | v0.8.0 | v0.8.2 | v0.8.3 |
+|---|---|---|---|---|
+| `ELF32 ARM` | Kotlin ARM/Thumb + MRE | Có | Có | Có, +GCC bootstrap/init-array |
+| Gameloft raw ARM + zlib (`RAW_ARM_ZLIB`) | Kotlin ARM/Thumb + MRE | Có | Có | Có, giữ regression |
+| Flash Lite `FWS/CWS` | Android Kotlin + SWF/AVM1 | Có, compatibility-first | Có, giữ nguyên + test JVM stubs | Có, giữ menu 4→5 |
+| Unknown/proprietary | Detector | Trả `UNKNOWN`, không fallback MREmu | Giữ nguyên | Giữ nguyên |
 
 ## 4. Public API (giữ nguyên qua 2 bản)
 
@@ -102,6 +103,20 @@ An toàn: binary có chuỗi `GL_Demo/SMS/UNLOCK`; `vm_send_sms` (v0.8.2) luôn 
 
 Flash backend v0.8.x: parser SWF + player + AVM1 menu/input, `ZWS/LZMA` báo chưa hỗ trợ, giữ rule timeline `v0.4 -> v0.5` cho scenery động.
 
+### 5.3 v0.8.3 — 3 title ELF mới (binary user-supplied, không kèm ZIP)
+
+| VXP | Backend | Kết quả | Ghi chú |
+|---|---|---|---|
+| `CatBoxMRE.vxp` | `ELF_ARM` | PASS gameplay, 218 frames / 28.3M instr | input, timer, resource, file, graphics active |
+| `RetroMRE.vxp` | `ELF_ARM` | PASS menu `RETRO MRE / PIXEL LAUNCHER`, 18 frames / 11.8M instr | `vm_find_first/next/close` thật + UCS2 NUL fix, test `demo.gb` ở sandbox E: |
+| `Whisk3D.vxp` | `ELF_ARM` | PASS scene 3D, 9 frames / 33.3M instr | render cube/sphere/cone 240×320 |
+
+Fix lõi nhờ 3 title này: `R_ARM_RELATIVE` sym-index-0, bootstrap `gcc_entry` + `.init_array`,
+Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` +
+`UMULL/UMLAL/SMULL/SMLAL` + Operand2 PC (+8), `_vm_log_info/_vm_log_error`,
+`vm_find_*` wildcard, UCS2→ASCII NUL. Xem
+`VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`.
+
 ## 6. Thay đổi chi tiết
 
 ### v0.8.0
@@ -111,6 +126,15 @@ Flash backend v0.8.x: parser SWF + player + AVM1 menu/input, `ZWS/LZMA` báo ch�
 - Public `VxpCoreLibrary`, `VxpSession`, `AndroidVxpCore`, `AndroidVxpSession`; output duy nhất `FrameSnapshot RGB565`; Nokia key helpers.
 - Crazy Taxi: Shape/PlaceObject2/RemoveObject2/JPEG3/timeline/ButtonCondAction/AVM1 Start.
 - Spider-Man: regression 6s không fault.
+
+### v0.8.3
+- ELF `R_ARM_RELATIVE` sym-index-0; GOT/init-array VXP GCC relocate đúng.
+- Bootstrap `gcc_entry` (`vm_get_sym_entry`) + chạy `.init_array` trước `vm_main`.
+- Thumb `BLX register` (LR + interworking), PC high-register = current+4, thêm `STRH/LDRH` immediate.
+- ARM `CLZ`, `LDRD/STRD`, `UMULL/UMLAL/SMULL/SMLAL`; Operand2 đọc r15 = current+8 (fix veneer `ADD pc,r12,pc`).
+- `_vm_log_info/_vm_log_error` thành logging API; `vm_find_first/next/close` enumerate thật + wildcard; UCS2→ASCII giữ NUL.
+- Regression: CatBoxMRE gameplay, RetroMRE menu, Whisk3D 3D; giữ Spider-Man + Crazy Taxi.
+- Thêm 7 CPU regression tests + `validation/new_vxp/*`, `validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`, CSV/SHA256.
 
 ### v0.8.2
 - `ArmCpu`: đủ nhóm Thumb ALU register: `ADC, SBC, ROR, NEG, CMN`.
@@ -123,15 +147,19 @@ Flash backend v0.8.x: parser SWF + player + AVM1 menu/input, `ZWS/LZMA` báo ch�
 
 - v0.8.0: `16` file `vxp-core/*.kt` (chưa có `PngDecoder.kt`), không có `tests/`, `validation/` có 4 txt.
 - v0.8.2: thêm `vxp-core/.../PngDecoder.kt`, thêm `tests/jvm/*` (4 file) + `tests/android-graphics-jvm/*` (2 file), `validation/` mở rộng (7 txt + 3 png).
+- v0.8.3: thêm 7 CPU regression tests (tổng 11 tests/jvm), `validation/new_vxp/*` + `validation/all_vxp/*`, `ALL_VXP_COMPATIBILITY_v0.8.3.md`, CSV + SHA256 (tổng 116 files).
 
 ## 8. Nên dùng bản nào?
 
-- Dùng `v0.8.2` cho mọi tích hợp mới: tương thích superset của `v0.8.0`, sửa đúng lỗi Spider-Man thật, an toàn SMS, có regression để kiểm lại.
+- Dùng `v0.8.3` cho mọi tích hợp mới: superset của `v0.8.2`, tương thích GCC ELF, 3 title ELF mới, giữ toàn bộ regression cũ.
 - Chỉ tham khảo `v0.8.0` khi cần đối chiếu sha frame cũ (`7613e735…`, `fbf54d2f…`) hoặc hành vi trước Thumb-ALU fix.
+- `v0.8.2` giữ lại để đối chiếu regression Spider-Man dài 23.5M insn trước thay đổi CPU v0.8.3.
 
 ## 9. Nguồn đối chiếu
 
 - `VXP-Core-Library-v0.8/README.md`, `CHANGELOG.md`, `docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.2/README.md`, `CHANGELOG.md`, `docs/TEST_RESULTS.md`, `docs/INTEGRATE_EXISTING_UI.md`
+- `VXP-Core-Library-v0.8.3/README.md`, `CHANGELOG.md`, `docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`, `validation/new_vxp/COMPATIBILITY_v0.8.3.md`
 - `vxp-core/.../VxpLibrary.kt: VERSION`, `vxp-core-android/.../AndroidVxpCore.kt: VERSION`
 - `validation/spiderman_v08.txt`, `spiderman_v082.txt`, `crazytaxi_v08.txt`, `crazytaxi_v082.txt`

@@ -22,13 +22,14 @@ VXP file -> AndroidVxpCore -> Kotlin backend (ARM/MRE or Flash Lite)
 | Folder | Version | Artifact | Notes |
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | First library split |
-| `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Latest: Thumb ALU, SMS sandbox, long regression |
+| `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS sandbox, long regression |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | Latest: ELF/GCC compat + 3 new ELF titles |
 
-Use **v0.8.2** for new integrations. See `VERSIONS.md`.
+Use **v0.8.3** for new integrations. See `VERSIONS.md`.
 
 ## 3. Backends
 
-- `ELF32 ARM` → Kotlin ARM/Thumb + MRE: supported.
+- `ELF32 ARM` → Kotlin ARM/Thumb + MRE: supported, v0.8.3 adds GCC `gcc_entry` + `.init_array` bootstrap.
 - Raw ARM + zlib (`RAW_ARM_ZLIB`, Gameloft) → Kotlin ARM/Thumb + MRE: supported.
 - Flash Lite `FWS/CWS` → Android Kotlin + SWF/AVM1: compatibility-first.
 - Unknown → detector returns `UNKNOWN`, no MREmu fallback.
@@ -52,7 +53,7 @@ dependencies {
 }
 ```
 
-Or use the prebuilt `dist/vxp-core-0.8.2.jar` as a file dependency.
+Or use the prebuilt `dist/vxp-core-0.8.3.jar` as a file dependency.
 
 ## 6. Usage
 
@@ -80,6 +81,8 @@ framebuffer is the only LCD source.
 
 - Spider-Man (`RAW_ARM_ZLIB`): 23,524,795 insn / 425 frames / 440 events / 424 timers, 240x320 RGB565, no fault, `stubbedSymbols = []`.
 - Crazy Taxi (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 via real AVM1 action.
+- v0.8.3 ELF titles: `CatBoxMRE` gameplay (218 frames / 28.3M instr), `RetroMRE` menu (18 frames / 11.8M instr, real `vm_find_*` + UCS2 NUL fix), `Whisk3D` 3D scene (9 frames / 33.3M instr).
+- v0.8.3 CPU fixes: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + long multiply, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` wildcard.
 
 ## 8. Safety
 
@@ -89,4 +92,5 @@ framebuffer is the only LCD source.
 
 - https://qeafivels.com/
 - `../VERSIONS.md`, `../README.md`
-- `VXP-Core-Library-v0.8.2/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`

@@ -1,0 +1,10 @@
+FILE=CatBoxMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+[WARN] vm_main returned without vm_reg_sysevt_callback(); no CREATE/PAINT callback can be delivered
+FRAME_CALLBACKS=0
+LAST_FRAME=nullxnull serial=null
+RESULT backend=ELF_ARM exit=0 instructions=18 frames=0 events=0 timers=0 timedOut=false
+RESOLVED=0
+STUBBED=,__libc_fini,__fini_array_end,__fini_array_start,__gnu_Unwind_Find_exidx,__cxa_call_unexpected,__cxa_begin_cleanup,__cxa_type_match

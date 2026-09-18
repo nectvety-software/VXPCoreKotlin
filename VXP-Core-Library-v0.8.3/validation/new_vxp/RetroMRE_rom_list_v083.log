@@ -1,0 +1,10 @@
+FILE=RetroMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+STATE=Stopped(result=VxpRunResult(backend=ELF_ARM, exitCode=0, instructions=64659072, frames=91, events=92, timerCallbacks=90, timedOut=true, resolvedSymbols=[vm_graphic_get_screen_width, vm_graphic_get_screen_height, vm_get_removeable_driver, vm_get_system_driver, vm_ascii_to_ucs2, vm_find_first, vm_ucs2_to_ascii, vm_file_get_attributes, vm_find_next, vm_find_close, vm_reg_sysevt_callback, vm_reg_keyboard_callback, vm_reg_pen_callback, vm_graphic_create_layer, vm_graphic_get_layer_buffer, vm_graphic_set_clip, vm_graphic_set_font, vm_create_timer, vm_graphic_setcolor, vm_graphic_fill_rect_ex, vm_graphic_flush_layer, vm_delete_timer, vm_file_open], stubbedSymbols=[__deregister_frame_info, __register_frame_info, __fini_array_end, __fini_array_start, __libc_fini]))
+FRAME_CALLBACKS=91
+LAST_FRAME=240x320 serial=91
+RESULT backend=ELF_ARM exit=0 instructions=64659072 frames=91 events=92 timers=90 timedOut=true
+RESOLVED=23
+STUBBED=__deregister_frame_info,__register_frame_info,__fini_array_end,__fini_array_start,__libc_fini
