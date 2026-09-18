@@ -1,0 +1,4 @@
+file,sha256,backend,menu,gameplay,status,notes
+CrazyTaxi_1.0.vxp,6c4fa09ba9e03bb799a361cf4bd64a1d8e8776ad2458d0cad6c43cb9519ec058,FLASH_LITE,yes,yes,PASS,"menu frame 4; OK -> AVM1 -> frame 5; playing=true"
+The Amazing Spider-Man - The Daily Bugle(1).vxp,54f1b4b5b0a5d3354638f526241a8717a1ba9b64ddf10f6d9d67324d7f0fdae3,RAW_ARM_ZLIB,yes,no,PARTIAL,"stable menu/title; demo/SMS/unlock flow; no billing bypass"
+The Amazing Spider-Man - The Daily Bugle.vxp,54f1b4b5b0a5d3354638f526241a8717a1ba9b64ddf10f6d9d67324d7f0fdae3,RAW_ARM_ZLIB,yes,no,PARTIAL,"exact duplicate of (1)"

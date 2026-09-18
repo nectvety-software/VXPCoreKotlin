@@ -23,9 +23,10 @@ VXP -> AndroidVxpCore -> Kotlin 백엔드(ARM/MRE 또는 Flash Lite)
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | 최초 라이브러리 분리 |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS 샌드박스, 장기 회귀 |
-| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | 최신: ELF/GCC 호환 + 신규 ELF 3종 |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC 호환 + 신규 ELF 3종 |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | 최신: Kotlin-only 재구성, provenance/준수 문서 |
 
-신규 연동은 **v0.8.3** 사용. 자세한 내용은 `VERSIONS.md`.
+신규 연동·배포 빌드는 **v0.8.3-cleanroom** 사용. 자세한 내용은 `VERSIONS.md`.
 
 ## 3. 백엔드
 
@@ -53,7 +54,7 @@ dependencies {
 }
 ```
 
-미리 빌드된 `dist/vxp-core-0.8.3.jar` 사용도 가능합니다.
+미리 빌드된 `dist/vxp-core-0.8.3-cleanroom.jar` 사용도 가능합니다.
 
 ## 6. 사용법
 
@@ -83,6 +84,7 @@ session.stop(); session.close()
 - Crazy Taxi(`FLASH_LITE`): 176x220 @20fps, 35 프레임, 메뉴 4번 → OK → 실제 AVM1로 5번 프레임 이동.
 - v0.8.3 신규 ELF 3종: `CatBoxMRE` 게임플레이(218 프레임 / 28.3M 명령), `RetroMRE` 메뉴(18 프레임 / 11.8M 명령, 실제 `vm_find_*` + UCS2 NUL 수정), `Whisk3D` 3D 장면(9 프레임 / 33.3M 명령).
 - v0.8.3 CPU 수정: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + long multiply, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` 와일드카드.
+- clean-room 재검증: CatBoxMRE 30.1M/218f, RetroMRE 19.0M/28f, Whisk3D 33.3M/9f, Spider-Man 9.5M/82f 미해결 없음, Crazy Taxi 4→5. `verify_clean_room.sh` PASS, SDK/JNI/NDK/C/C++ 없음.
 
 ## 8. 안전
 
@@ -92,5 +94,7 @@ session.stop(); session.close()
 
 - https://qeafivels.com/
 - `../VERSIONS.md`, `../README.md`
-- `VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`

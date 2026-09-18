@@ -1,0 +1,17 @@
+=== CatBoxMRE ===
+FILE=CatBoxMRE.vxp
+BACKEND=ELF_ARM
+STATE=Starting(backend=ELF_ARM)
+STATE=Running(backend=ELF_ARM)
+INJECT=OK
+INJECT=DOWN
+INJECT=OK
+INJECT=LEFT_SOFT
+INJECT=RIGHT_SOFT
+INJECT=UP
+INJECT=OK
+FRAME_CALLBACKS=218
+LAST_FRAME=240x320 serial=218
+RESULT backend=ELF_ARM exit=0 instructions=30163160 frames=218 events=122 timers=106 timedOut=true
+RESOLVED=45
+STUBBED=__libc_fini,__fini_array_end,__fini_array_start,__gnu_Unwind_Find_exidx,__cxa_call_unexpected,__cxa_begin_cleanup,__cxa_type_match

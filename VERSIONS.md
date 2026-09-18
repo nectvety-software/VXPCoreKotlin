@@ -19,7 +19,8 @@ VXP file
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` (`VxpCoreLibrary.VERSION`, `AndroidVxpCore.VERSION`) | `dist/vxp-core-0.8.0.jar` | Thư viện lõi đầu tiên, bỏ app/demo UI |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + SMS sandbox + regression dài |
-| `VXP-Core-Library-v0.8.3/` | `0.8.3` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3.jar` | Mới nhất: tương thích ELF/GCC + 3 title ELF mới |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3.jar` | Tương thích ELF/GCC + 3 title ELF mới |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3-cleanroom.jar` | Mới nhất: rebase Kotlin-only, bỏ catalog SDK, + docs provenance/compliance |
 
 > Ghi chú: `CHANGELOG v0.8.2` có nhắc patch `v0.8.1` (PNG, Thumb BLX immediate, App Manager, operator-code)
 > nhưng trong repo hiện chỉ lưu 2 gói `v0.8` và `v0.8.2`.
@@ -117,7 +118,28 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
 `vm_find_*` wildcard, UCS2→ASCII NUL. Xem
 `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`.
 
+### 5.4 v0.8.3-cleanroom — re-validation trên cây Kotlin-only rebase (không bundle binary)
+
+| Workload | Backend | Kết quả clean-room |
+|---|---|---|
+| `CatBoxMRE` | `ELF_ARM` | 30.163.160 instr / 218 frames, stable timed run |
+| `RetroMRE` | `ELF_ARM` | 18.960.170 instr / 28 frames, stable timed run |
+| `Whisk3D` | `ELF_ARM` | 33.296.269 instr / 9 frames, stable timed run |
+| Spider-Man | `RAW_ARM_ZLIB` | 9.480.936 instr / 82 frames, no unresolved symbols |
+| Crazy Taxi | `FLASH_LITE` | menu 4 → OK → frame 5 |
+
+- `verify_clean_room.sh`: PASS; không còn file C/C++/JNI/NDK hay catalog sinh từ SDK trong gói.
+- Tài liệu mới: `NOTICE-CLEANROOM.txt`, `docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`,
+  `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`, `validation/CLEANROOM_VALIDATION_v0.8.3.md`,
+  thêm `build/GenericVxpProbe.kt` + `build/core_sources.txt`.
+
 ## 6. Thay đổi chi tiết
+
+### v0.8.3-cleanroom
+- Rebase trên implementation Kotlin-only v0.8.3; xóa workflow catalog suy từ SDK proprietary và mọi wording SDK trong source/docs.
+- Thêm chính sách clean-room/provenance; handler tương thích chỉ giữ khi implement độc lập từ hành vi quan sát + regression tests.
+- Không JNI/NDK/C/C++/MREmu runtime; `vm_*` là compatibility identifiers do guest import, implement bằng Kotlin độc lập.
+- Commercial binaries không kèm trong gói; checklist phát hành thương mại (SAF import, sandbox, SMS/network opt-in, ads/Pro tách khỏi content).
 
 ### v0.8.0
 - Tách thành thư viện, xóa app/demo UI khỏi deliverable.
@@ -148,10 +170,12 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
 - v0.8.0: `16` file `vxp-core/*.kt` (chưa có `PngDecoder.kt`), không có `tests/`, `validation/` có 4 txt.
 - v0.8.2: thêm `vxp-core/.../PngDecoder.kt`, thêm `tests/jvm/*` (4 file) + `tests/android-graphics-jvm/*` (2 file), `validation/` mở rộng (7 txt + 3 png).
 - v0.8.3: thêm 7 CPU regression tests (tổng 11 tests/jvm), `validation/new_vxp/*` + `validation/all_vxp/*`, `ALL_VXP_COMPATIBILITY_v0.8.3.md`, CSV + SHA256 (tổng 116 files).
+- v0.8.3-cleanroom: + `NOTICE-CLEANROOM.txt`, `verify_clean_room.sh`, `build/GenericVxpProbe.kt`, docs `CLEAN_ROOM_POLICY/PROVENANCE/COMMERCIAL_DISTRIBUTION_CHECKLIST`, `validation/CLEANROOM_VALIDATION_v0.8.3.md` + `validation/cleanroom_vxp/*` (tổng 90 files).
 
 ## 8. Nên dùng bản nào?
 
-- Dùng `v0.8.3` cho mọi tích hợp mới: superset của `v0.8.2`, tương thích GCC ELF, 3 title ELF mới, giữ toàn bộ regression cũ.
+- Dùng `v0.8.3-cleanroom` cho mọi tích hợp mới và mọi bản phát hành/phân phối: tương đương compat v0.8.3 nhưng provenance sạch, có checklist thương mại.
+- `v0.8.3` thường giữ lại để đối chiếu trước rebase clean-room.
 - Chỉ tham khảo `v0.8.0` khi cần đối chiếu sha frame cũ (`7613e735…`, `fbf54d2f…`) hoặc hành vi trước Thumb-ALU fix.
 - `v0.8.2` giữ lại để đối chiếu regression Spider-Man dài 23.5M insn trước thay đổi CPU v0.8.3.
 
@@ -160,6 +184,8 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
 - `VXP-Core-Library-v0.8/README.md`, `CHANGELOG.md`, `docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.2/README.md`, `CHANGELOG.md`, `docs/TEST_RESULTS.md`, `docs/INTEGRATE_EXISTING_UI.md`
 - `VXP-Core-Library-v0.8.3/README.md`, `CHANGELOG.md`, `docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/README.md`, `CHANGELOG.md`, `NOTICE-CLEANROOM.txt`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
 - `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`, `validation/new_vxp/COMPATIBILITY_v0.8.3.md`
 - `vxp-core/.../VxpLibrary.kt: VERSION`, `vxp-core-android/.../AndroidVxpCore.kt: VERSION`
 - `validation/spiderman_v08.txt`, `spiderman_v082.txt`, `crazytaxi_v08.txt`, `crazytaxi_v082.txt`

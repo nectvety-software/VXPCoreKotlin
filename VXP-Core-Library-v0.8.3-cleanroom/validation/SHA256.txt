@@ -1,0 +1,2 @@
+01e3c24473f31bc9f76ef14d4175d7f254f4ffd5e5174c77f09d3fd6be41941f  VXP-Core-Library-v0.8.3.zip
+8293313c4079ffc9ae73a5db8977cbffd5845c9eadeb6942e2e147b32483e27e  VXP-Core-Library-v0.8.3/dist/vxp-core-0.8.3.jar

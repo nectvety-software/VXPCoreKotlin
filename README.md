@@ -27,11 +27,12 @@ Maintained by **DOXUANHOP**.
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | First library split, UI removed from deliverable |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` (core + Android facade in sync) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + SMS sandbox + long regression |
-| `VXP-Core-Library-v0.8.3/` | `0.8.3` (core + Android facade in sync) | `dist/vxp-core-0.8.3.jar` | Latest, ELF/GCC compat (R_ARM_RELATIVE, gcc_entry, CLZ/LDRD/long-multiply) + 3 new ELF titles |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` (core + Android facade in sync) | `dist/vxp-core-0.8.3.jar` | ELF/GCC compat (R_ARM_RELATIVE, gcc_entry, CLZ/LDRD/long-multiply) + 3 new ELF titles |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room edition | `dist/vxp-core-0.8.3-cleanroom.jar` | Latest, rebased Kotlin-only, no SDK-derived catalog, + provenance/compliance docs |
 
 See `VERSIONS.md` for the full Vietnamese version matrix, and
-`VXP-Core-Library-v0.8.3/CHANGELOG.md` for details.
-Use `v0.8.3` for all new integrations.
+`VXP-Core-Library-v0.8.3-cleanroom/CHANGELOG.md` for details.
+Use `v0.8.3-cleanroom` for all new integrations and any distribution build.
 
 ## Supported backends
 
@@ -47,6 +48,7 @@ Validated:
 - *The Amazing Spider-Man - The Daily Bugle* (`RAW_ARM_ZLIB`): 23,524,795 instructions / 425 frames / 440 events / 424 timers, 240x320 RGB565, no CPU/memory fault, `stubbedSymbols = []` (v0.8.2; re-validated in v0.8.3 with 78 frames / 9.4M instr, no stubs).
 - *CrazyTaxi_1.0.vxp* (`FLASH_LITE`): stage 176x220, 20 FPS, 35 frames, 25 shapes / 12 sprites / 5 JPEG3 / 7 buttons, startup menu frame 4, `OK` runs a real AVM1 `ButtonCondAction` to frame 5.
 - *v0.8.3 new ELF titles*: `CatBoxMRE.vxp` gameplay (218 frames / 28.3M instr), `RetroMRE.vxp` menu `RETRO MRE / PIXEL LAUNCHER` (18 frames / 11.8M instr, real `vm_find_first/next/close` + UCS2 NUL fix), `Whisk3D.vxp` 3D scene cube/sphere/cone (9 frames / 33.3M instr).
+- *v0.8.3-cleanroom re-validation*: same compat re-run on the rebased Kotlin-only tree — CatBoxMRE 30.1M instr / 218 frames, RetroMRE 19.0M / 28 frames, Whisk3D 33.3M / 9 frames, Spider-Man 9.5M / 82 frames no unresolved symbols, Crazy Taxi menu 4 → OK → frame 5. `verify_clean_room.sh` PASS, no C/C++/JNI/NDK or SDK-derived catalog in package.
 
 User-supplied commercial binaries are test-only and are not bundled in the ZIP/JAR.
 
@@ -68,6 +70,7 @@ Verify with:
 ```bash
 ./verify_kotlin_only.sh
 # OK: vxp-core + vxp-core-android are Kotlin-only (no JNI/NDK/C/C++).
+./verify_clean_room.sh   # cleanroom edition only
 ```
 
 ## Installation
@@ -162,6 +165,9 @@ Strings such as `GL_Demo / UNLOCK / SMS` in test binaries are runtime data only.
 - Project site: https://qeafivels.com/
 - Version matrix: `./VERSIONS.md`
 - v0.8.3 README: `./VXP-Core-Library-v0.8.3/README.md`
+- v0.8.3-cleanroom (latest): `./VXP-Core-Library-v0.8.3-cleanroom/README.md`, `NOTICE-CLEANROOM.txt`
+- Clean-room policy: `./VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
+- Clean-room validation: `./VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
 - Integration guide: `./VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`
 - Test results: `./VXP-Core-Library-v0.8.3/docs/TEST_RESULTS.md`
 - Compatibility matrix: `./VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`

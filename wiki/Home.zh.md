@@ -23,9 +23,10 @@ VXP -> AndroidVxpCore -> Kotlin 后端（ARM/MRE 或 Flash Lite）
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | 首次拆分为库 |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU、SMS 沙箱、长回归 |
-| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | 最新：ELF/GCC 兼容 + 3 个新 ELF 标题 |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC 兼容 + 3 个新 ELF 标题 |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | 最新：纯 Kotlin 重构，provenance/合规文档 |
 
-新项目请使用 **v0.8.3**。详见 `VERSIONS.md`。
+新项目与发行构建请使用 **v0.8.3-cleanroom**。详见 `VERSIONS.md`。
 
 ## 3. 后端支持
 
@@ -53,7 +54,7 @@ dependencies {
 }
 ```
 
-也可直接使用预构建的 `dist/vxp-core-0.8.3.jar`。
+也可直接使用预构建的 `dist/vxp-core-0.8.3-cleanroom.jar`。
 
 ## 6. 用法
 
@@ -82,6 +83,7 @@ session.stop(); session.close()
 - Crazy Taxi（`FLASH_LITE`）：176x220 @20fps，35 帧，菜单第 4 帧 → OK → 真实 AVM1 跳到第 5 帧。
 - v0.8.3 新增 3 个 ELF：`CatBoxMRE` 游戏（218 帧 / 28.3M 指令）、`RetroMRE` 菜单（18 帧 / 11.8M 指令，真实 `vm_find_*` + UCS2 NUL 修复）、`Whisk3D` 3D 场景（9 帧 / 33.3M 指令）。
 - v0.8.3 CPU 修复：`R_ARM_RELATIVE` sym-0、`gcc_entry`/`.init_array`、Thumb BLX-reg + PC(+4) + STRH/LDRH、ARM CLZ + LDRD/STRD + 长乘法、Operand2 PC(+8)、`_vm_log_*`、`vm_find_*` 通配符。
+- clean-room 再验证：CatBoxMRE 30.1M/218f、RetroMRE 19.0M/28f、Whisk3D 33.3M/9f、Spider-Man 9.5M/82f 无未解析符号、Crazy Taxi 4→5。`verify_clean_room.sh` 通过，包内无 SDK/JNI/NDK/C/C++。
 
 ## 8. 安全
 
@@ -91,5 +93,7 @@ session.stop(); session.close()
 
 - https://qeafivels.com/
 - `../VERSIONS.md`、`../README.md`
-- `VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`、`docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/INTEGRATE_EXISTING_UI.md`、`docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`、`docs/PROVENANCE.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`

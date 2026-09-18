@@ -1,0 +1,47 @@
+## CatBoxMRE
+
+```text
+FILE=CatBoxMRE.vxp
+BACKEND=ELF_ARM
+FRAME_CALLBACKS=218
+LAST_FRAME=240x320 serial=218
+RESULT backend=ELF_ARM exit=0 instructions=30163160 frames=218 events=122 timers=106 timedOut=true
+RESOLVED=45
+STUBBED=__libc_fini,__fini_array_end,__fini_array_start,__gnu_Unwind_Find_exidx,__cxa_call_unexpected,__cxa_begin_cleanup,__cxa_type_match
+```
+
+## RetroMRE
+
+```text
+FILE=RetroMRE.vxp
+BACKEND=ELF_ARM
+FRAME_CALLBACKS=28
+LAST_FRAME=240x320 serial=28
+RESULT backend=ELF_ARM exit=0 instructions=18960170 frames=28 events=39 timers=23 timedOut=true
+RESOLVED=19
+STUBBED=__deregister_frame_info,__register_frame_info,__fini_array_end,__fini_array_start,__libc_fini
+```
+
+## SpiderMan
+
+```text
+FILE=The Amazing Spider-Man - The Daily Bugle(1).vxp
+BACKEND=RAW_ARM_ZLIB
+FRAME_CALLBACKS=82
+LAST_FRAME=240x320 serial=82
+RESULT backend=RAW_ARM_ZLIB exit=0 instructions=9480936 frames=82 events=97 timers=81 timedOut=true
+RESOLVED=40
+STUBBED=
+```
+
+## Whisk3D
+
+```text
+FILE=Whisk3D.vxp
+BACKEND=ELF_ARM
+FRAME_CALLBACKS=9
+LAST_FRAME=240x320 serial=9
+RESULT backend=ELF_ARM exit=0 instructions=33296269 frames=9 events=15 timers=0 timedOut=true
+RESOLVED=24
+STUBBED=__deregister_frame_info,__register_frame_info,__fini_array_end,__fini_array_start,__libc_fini
+```

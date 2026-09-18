@@ -23,9 +23,10 @@ VXP -> AndroidVxpCore -> Kotlin バックエンド（ARM/MRE または Flash Lit
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | ライブラリ初分割 |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU、SMS サンドボックス、長時間回帰 |
-| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | 最新：ELF/GCC 互換 + 新規 ELF 3 作品 |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC 互換 + 新規 ELF 3 作品 |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | 最新：Kotlin-only 再構成、provenance/準拠文書 |
 
-新規導入は **v0.8.3** を使用。詳細は `VERSIONS.md`。
+新規導入・配布ビルドは **v0.8.3-cleanroom** を使用。詳細は `VERSIONS.md`。
 
 ## 3. バックエンド
 
@@ -53,7 +54,7 @@ dependencies {
 }
 ```
 
-ビルド済み `dist/vxp-core-0.8.3.jar` の利用も可能です。
+ビルド済み `dist/vxp-core-0.8.3-cleanroom.jar` の利用も可能です。
 
 ## 6. 使い方
 
@@ -83,6 +84,7 @@ session.stop(); session.close()
 - Crazy Taxi（`FLASH_LITE`）：176x220 @20fps、全 35 フレーム、メニュー 4 枚目 → OK → 実 AVM1 で 5 枚目へ。
 - v0.8.3 新規 ELF 3 作品：`CatBoxMRE` ゲームプレイ（218 フレーム / 28.3M 命令）、`RetroMRE` メニュー（18 フレーム / 11.8M 命令、実 `vm_find_*` + UCS2 NUL 修正）、`Whisk3D` 3D シーン（9 フレーム / 33.3M 命令）。
 - v0.8.3 CPU 修正：`R_ARM_RELATIVE` sym-0、`gcc_entry`/`.init_array`、Thumb BLX-reg + PC(+4) + STRH/LDRH、ARM CLZ + LDRD/STRD + ロング乗算、Operand2 PC(+8)、`_vm_log_*`、`vm_find_*` ワイルドカード。
+- clean-room 再検証：CatBoxMRE 30.1M/218f、RetroMRE 19.0M/28f、Whisk3D 33.3M/9f、Spider-Man 9.5M/82f 未解決なし、Crazy Taxi 4→5。`verify_clean_room.sh` PASS、SDK/JNI/NDK/C/C++ なし。
 
 ## 8. 安全性
 
@@ -92,5 +94,7 @@ session.stop(); session.close()
 
 - https://qeafivels.com/
 - `../VERSIONS.md`、`../README.md`
-- `VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`、`docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/INTEGRATE_EXISTING_UI.md`、`docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`、`docs/PROVENANCE.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`

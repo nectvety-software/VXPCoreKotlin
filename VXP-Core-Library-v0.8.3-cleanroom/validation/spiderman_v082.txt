@@ -1,0 +1,21 @@
+The Amazing Spider-Man - The Daily Bugle(1).vxp
+VXP Core Library v0.8.2 regression
+
+backend=RAW_ARM_ZLIB
+instructions=23524795
+frames=425
+events=440
+timerCallbacks=424
+timedOut=true
+cpuMemoryFault=none
+stubbedSymbols=[]
+
+Important compatibility fixes exercised before this successful run:
+- PNG vm_graphic_load_image + vm_graphic_get_img_property
+- Thumb BLX immediate
+- vm_appmgr_get_installed_list count output
+- vm_query_operator_code zero-terminated operator code
+- Thumb ADC/SBC/ROR/NEG/CMN
+- strtoi native Kotlin handler
+
+The supplied VXP contains GL_Demo / UNLOCK / SMS billing strings. vm_send_sms is sandboxed and returns failure; no real SMS is sent and no billing/unlock mechanism is bypassed.

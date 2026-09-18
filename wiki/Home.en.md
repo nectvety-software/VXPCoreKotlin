@@ -23,9 +23,10 @@ VXP file -> AndroidVxpCore -> Kotlin backend (ARM/MRE or Flash Lite)
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | First library split |
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS sandbox, long regression |
-| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | Latest: ELF/GCC compat + 3 new ELF titles |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC compat + 3 new ELF titles |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Latest: Kotlin-only rebase, provenance/compliance docs |
 
-Use **v0.8.3** for new integrations. See `VERSIONS.md`.
+Use **v0.8.3-cleanroom** for new integrations and any distribution build. See `VERSIONS.md`.
 
 ## 3. Backends
 
@@ -53,7 +54,7 @@ dependencies {
 }
 ```
 
-Or use the prebuilt `dist/vxp-core-0.8.3.jar` as a file dependency.
+Or use the prebuilt `dist/vxp-core-0.8.3-cleanroom.jar` as a file dependency.
 
 ## 6. Usage
 
@@ -83,6 +84,8 @@ framebuffer is the only LCD source.
 - Crazy Taxi (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 via real AVM1 action.
 - v0.8.3 ELF titles: `CatBoxMRE` gameplay (218 frames / 28.3M instr), `RetroMRE` menu (18 frames / 11.8M instr, real `vm_find_*` + UCS2 NUL fix), `Whisk3D` 3D scene (9 frames / 33.3M instr).
 - v0.8.3 CPU fixes: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + long multiply, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` wildcard.
+- v0.8.3-cleanroom re-validation: CatBoxMRE 30.1M / 218f, RetroMRE 19.0M / 28f, Whisk3D 33.3M / 9f, Spider-Man 9.5M / 82f no unresolved symbols, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
+- Clean-room policy: no SDK headers/libs/catalogs, no MREmu, no JNI/NDK/C/C++; see `docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`.
 
 ## 8. Safety
 
@@ -92,5 +95,7 @@ framebuffer is the only LCD source.
 
 - https://qeafivels.com/
 - `../VERSIONS.md`, `../README.md`
-- `VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
 - `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/INTEGRATE_EXISTING_UI.md`, `docs/TEST_RESULTS.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`
+- `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`

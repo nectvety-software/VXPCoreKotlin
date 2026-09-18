@@ -1,0 +1,6 @@
+file,backend,status,frames,instructions,notes
+CrazyTaxi_1.0.vxp,FLASH_LITE,gameplay,5,,menu frame 4 -> AVM1 OK -> frame 5
+The Amazing Spider-Man - The Daily Bugle,RAW_ARM_ZLIB,menu_demo,78,9425458,no CPU/memory fault; no stubs on tested path
+CatBoxMRE.vxp,ELF_ARM,gameplay,218,28341501,240x320; timers and input active
+RetroMRE.vxp,ELF_ARM,menu,18,11807050,Pixel Launcher menu; sandbox has no ROMs
+Whisk3D.vxp,ELF_ARM,scene_3d,9,33296286,3D scene rendered
