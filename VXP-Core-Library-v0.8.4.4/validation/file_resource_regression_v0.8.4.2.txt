@@ -1,0 +1,6 @@
+VXP-Core v0.8.4.2 FILE_RESOURCE regression
+[PASS] SystemGraphicsFileResourceRegressionKt
+[PASS] path helpers / tell / EOF / copy / rename / timestamp / attributes
+[PASS] external named resource / raw slice / bounded file resource copy / delete / deinit
+[PASS] CPU + Thumb + PNG regression suite
+[PASS] CatBoxMRE / RetroMRE / Whisk3D short timed smoke

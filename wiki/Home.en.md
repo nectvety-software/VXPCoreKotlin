@@ -25,9 +25,11 @@ VXP file -> AndroidVxpCore -> Kotlin backend (ARM/MRE or Flash Lite)
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS sandbox, long regression |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC compat + 3 new ELF titles |
 | `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Kotlin-only rebase, provenance/compliance docs |
-| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | Latest: SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.2/` | `0.8.4.2` clean-room | `dist/vxp-core-0.8.4.2.jar` | Intermediate FILE_RESOURCE directory pass |
+| `VXP-Core-Library-v0.8.4.4/` | `0.8.4.4` clean-room | `dist/vxp-core-0.8.4.4.jar` | Latest: AUDIO bridge + playback accuracy + Android audio integration |
 
-Use **v0.8.4.1** for new integrations and any distribution build. See `VERSIONS.md`.
+Use **v0.8.4.4** for new integrations and any distribution build. See `VERSIONS.md`.
 
 ## 3. Backends
 
@@ -55,7 +57,7 @@ dependencies {
 }
 ```
 
-Or use the prebuilt `dist/vxp-core-0.8.4.1.jar` as a file dependency.
+Or use the prebuilt `dist/vxp-core-0.8.4.4.jar` as a file dependency.
 
 ## 6. Usage
 
@@ -75,6 +77,11 @@ session.penDown(x, y); session.penMove(x, y); session.penUp(x, y)
 session.stop(); session.close()
 ```
 
+Recommended on v0.8.4.4: use the `open(context=...)` overload to enable audio
+focus/interruption, forward `onHostPause()/onHostResume()` from the host
+lifecycle, and use `audioSnapshot()/seekAudioTo()/setAudioLooping()` for
+host-side audio state. The old no-`Context` overload is kept for compatibility.
+
 Keys: `1 UP, 2 DOWN, 3 LEFT, 4 RIGHT, 5 OK, 6 LSK, 7 RSK, 10 CLEAR, 48-57 digits, 42 *, 35 #`.
 Show boot text only before the first frame; after `onFrame()` the game
 framebuffer is the only LCD source.
@@ -87,6 +94,8 @@ framebuffer is the only LCD source.
 - v0.8.3 CPU fixes: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + long multiply, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` wildcard.
 - v0.8.3-cleanroom re-validation: 218f / 28f / 9f / 82f across samples, menu flow intact. `verify_clean_room.sh` PASS.
 - v0.8.4.1 alias pass: SYSTEM tick/resolver/callbacks, `vm_sscanf`, sandbox disk space; GRAPHICS screen/image/load/mirror aliases + `create_layer_ex`; FILE dual get-size, hardened open/append, `vm_resource_init`/`vm_res_load`. Corpus 76/76 first-class via `tools/observed_vxp_surface.py`.
+- v0.8.4.2 FILE_RESOURCE directory pass: `vm_file_copy/tell/is_eof/get_modify_time`, hardened copy/rename, guest path helpers, host-side attribute metadata, resource-from-file APIs (sandbox copy, no host mmap).
+- v0.8.4.3/0.8.4.4 AUDIO: host-neutral `MreAudioHost` in core + `AndroidMreAudioHost` (WAV→AudioTrack, encoded/MIDI/file→MediaPlayer), first-class play/MIDI/volume/interrupt handlers, 32 MiB ceiling, event-loop-marshalled callbacks; v0.8.4.4 adds duration/seek/loop probe, `AudioTrack` head-delta position, audio focus/ducking/lifecycle. Smoke after audio: 186f/91f/2f, hashes unchanged, 76/76 first-class.
 - v0.8.4.1 timed runs: 30.8M/218f, 26.8M/39f, 33.3M/9f, 9.4M/83f `stubbedSymbols=[]`, Flash Lite menu 4→OK(10 AVM1)→5.
 - Clean-room policy: no vendor headers/libs/catalogs, no third-party emulator code, no JNI/NDK/C/C++; see `docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`.
 
@@ -104,3 +113,6 @@ framebuffer is the only LCD source.
 - `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
 - `VXP-Core-Library-v0.8.4.1/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
 - `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`
+- `VXP-Core-Library-v0.8.4.4/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
+- `VXP-Core-Library-v0.8.4.4/validation/COMPATIBILITY_v0.8.4.4.md`
+- `VXP-Core-Library-v0.8.4.4/validation/AUDIO_v0.8.4.4.md`

@@ -1,0 +1,6 @@
+backend=ELF_ARM
+instructions=9988010
+frames=186
+events=92
+stubbed=__libc_fini, __fini_array_end, __fini_array_start, __gnu_Unwind_Find_exidx, __cxa_call_unexpected, __cxa_begin_cleanup, __cxa_type_match
+frame=240x320 serial=186 sha256=edf756cb672e48f96708afc30ec97a9694178744792087c548a6f0b24a841d0b

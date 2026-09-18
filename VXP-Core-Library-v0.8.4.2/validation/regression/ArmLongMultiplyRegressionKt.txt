@@ -1,0 +1,1 @@
+[OK] ARM long multiply regression: UMULL + SMULL

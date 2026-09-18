@@ -1,0 +1,2 @@
+== PngDecoderRegressionKt ==
+[OK] pure Kotlin PNG decode: 1x1 rgb565=0xf800

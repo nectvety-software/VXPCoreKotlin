@@ -1,0 +1,2 @@
+== ThumbBlxRegressionKt ==
+[OK] Thumb BLX immediate F001 E9A4 -> ARM target=0x234c LR=0x1005

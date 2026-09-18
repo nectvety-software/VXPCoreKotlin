@@ -1,0 +1,1 @@
+[OK] v0.8.4.1 SYSTEM/GRAPHICS/FILE_RESOURCE regression passed

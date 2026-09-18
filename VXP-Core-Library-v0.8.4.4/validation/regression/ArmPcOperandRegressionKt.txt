@@ -1,0 +1,1 @@
+[OK] ARM Operand2 PC regression: ADD pc,r12,pc -> 0x100108

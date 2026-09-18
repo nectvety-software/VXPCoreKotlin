@@ -1,0 +1,6 @@
+backend=ELF_ARM
+instructions=64572356
+frames=91
+events=92
+stubbed=__deregister_frame_info, __register_frame_info, __fini_array_end, __fini_array_start, __libc_fini
+frame=240x320 serial=91 sha256=2a0ea91b45e355ed267bbe7e4910e34d3376a777c6e9ef5800aef44ebad81532

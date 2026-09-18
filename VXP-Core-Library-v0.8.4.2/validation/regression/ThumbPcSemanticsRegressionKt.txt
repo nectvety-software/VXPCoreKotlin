@@ -1,0 +1,2 @@
+== ThumbPcSemanticsRegressionKt ==
+[OK] Thumb high-register PC semantics: ADD r3,PC used current+4

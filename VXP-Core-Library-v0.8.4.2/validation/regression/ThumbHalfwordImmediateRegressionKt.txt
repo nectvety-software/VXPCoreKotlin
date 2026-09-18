@@ -1,0 +1,2 @@
+== ThumbHalfwordImmediateRegressionKt ==
+[OK] Thumb immediate STRH/LDRH

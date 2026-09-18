@@ -1,0 +1,2 @@
+== ThumbAluRegressionKt ==
+[OK] Thumb ALU regression: ADC/SBC/ROR/NEG/CMN

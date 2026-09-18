@@ -25,9 +25,11 @@ VXP -> AndroidVxpCore -> backend Kotlin (ARM/MRE hoặc Flash Lite)
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS sandbox, regression dài |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | Tương thích ELF/GCC + 3 title ELF mới |
 | `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebase Kotlin-only, docs provenance/compliance |
-| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | Mới nhất: alias SYSTEM/GRAPHICS/FILE_RESOURCE, 76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | Alias SYSTEM/GRAPHICS/FILE_RESOURCE, 76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.2/` | `0.8.4.2` clean-room | `dist/vxp-core-0.8.4.2.jar` | Bản trung gian: FILE_RESOURCE directory pass |
+| `VXP-Core-Library-v0.8.4.4/` | `0.8.4.4` clean-room | `dist/vxp-core-0.8.4.4.jar` | Mới nhất: AUDIO bridge + playback accuracy + tích hợp audio Android |
 
-Tích hợp mới và mọi bản phân phối dùng **v0.8.4.1**. Xem `VERSIONS.md`.
+Tích hợp mới và mọi bản phân phối dùng **v0.8.4.4**. Xem `VERSIONS.md`.
 
 ## 3. Backend
 
@@ -55,7 +57,7 @@ dependencies {
 }
 ```
 
-Hoặc dùng `dist/vxp-core-0.8.4.1.jar` dựng sẵn.
+Hoặc dùng `dist/vxp-core-0.8.4.4.jar` dựng sẵn.
 
 ## 6. Sử dụng
 
@@ -75,6 +77,10 @@ session.penDown(x, y); session.penMove(x, y); session.penUp(x, y)
 session.stop(); session.close()
 ```
 
+Khuyến nghị ở v0.8.4.4: dùng overload `open(context=...)` để bật audio
+focus/interruption, chuyển tiếp `onHostPause()/onHostResume()` từ lifecycle,
+dùng `audioSnapshot()/seekAudioTo()/setAudioLooping()` cho trạng thái audio host.
+
 Phím: `1 UP, 2 DOWN, 3 LEFT, 4 RIGHT, 5 OK, 6 LSK, 7 RSK, 10 CLEAR, 48-57 số, 42 *, 35 #`.
 Chỉ hiện boot text trước frame đầu; sau `onFrame()` thì framebuffer game
 là nguồn LCD duy nhất.
@@ -88,6 +94,8 @@ là nguồn LCD duy nhất.
 - Re-validation clean-room: 218f / 28f / 9f / 82f trên các sample, menu giữ nguyên. `verify_clean_room.sh` PASS.
 - v0.8.4.1 alias pass: SYSTEM tick/resolver/callback, `vm_sscanf`, disk sandbox; GRAPHICS screen/image/load/mirror + `create_layer_ex`; FILE dual get-size, open/append chặt, `vm_resource_init`/`vm_res_load`. Corpus 76/76 first-class.
 - v0.8.4.1 timed runs: 30.8M/218f, 26.8M/39f, 33.3M/9f, 9.4M/83f `stubbedSymbols=[]`, Flash Lite 4→OK(10 AVM1)→5.
+- v0.8.4.2 directory pass: `vm_file_copy/tell/is_eof/get_modify_time`, copy/rename cứng, path helpers, attribute metadata, resource-from-file (copy qua sandbox).
+- v0.8.4.3/0.8.4.4 AUDIO: `MreAudioHost` trung lập + `AndroidMreAudioHost` (WAV→AudioTrack, encoded/MIDI/file→MediaPlayer), handlers play/MIDI/volume/interrupt, callback qua event-loop; v0.8.4.4 thêm probe duration/seek/loop, audio focus/ducking/lifecycle. Smoke sau audio: 186f/91f/2f, hash không đổi, 76/76 first-class.
 
 ## 8. An toàn
 
@@ -103,3 +111,6 @@ là nguồn LCD duy nhất.
 - `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
 - `VXP-Core-Library-v0.8.4.1/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
 - `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`
+- `VXP-Core-Library-v0.8.4.4/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
+- `VXP-Core-Library-v0.8.4.4/validation/COMPATIBILITY_v0.8.4.4.md`
+- `VXP-Core-Library-v0.8.4.4/validation/AUDIO_v0.8.4.4.md`

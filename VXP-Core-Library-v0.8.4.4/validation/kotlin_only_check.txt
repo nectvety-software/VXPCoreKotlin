@@ -1,0 +1,1 @@
+OK: vxp-core + vxp-core-android are Kotlin-only (no JNI/NDK/C/C++).

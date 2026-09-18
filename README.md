@@ -29,11 +29,13 @@ Maintained by **DOXUANHOP**.
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` (core + Android facade in sync) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + messaging sandbox + long regression |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` (core + Android facade in sync) | `dist/vxp-core-0.8.3.jar` | ELF/GCC compat (R_ARM_RELATIVE, gcc_entry, CLZ/LDRD/long-multiply) + 3 new ELF samples |
 | `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room edition | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebased Kotlin-only, no SDK-derived catalog, + provenance/compliance docs |
-| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room edition | `dist/vxp-core-0.8.4.1.jar` | Latest, SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed symbols first-class |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room edition | `dist/vxp-core-0.8.4.1.jar` | SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed symbols first-class |
+| `VXP-Core-Library-v0.8.4.2/` | `0.8.4.2` clean-room edition | `dist/vxp-core-0.8.4.2.jar` | Intermediate, FILE_RESOURCE directory/path/resource-from-file pass |
+| `VXP-Core-Library-v0.8.4.4/` | `0.8.4.4` clean-room edition | `dist/vxp-core-0.8.4.4.jar` | Latest, AUDIO bridge + playback accuracy + Android audio-system integration |
 
 See `VERSIONS.md` for the full version matrix, and
-`VXP-Core-Library-v0.8.4.1/CHANGELOG.md` for details.
-Use `v0.8.4.1` for all new integrations and any distribution build.
+`VXP-Core-Library-v0.8.4.4/CHANGELOG.md` for details.
+Use `v0.8.4.4` for all new integrations and any distribution build.
 
 ## Supported backends
 
@@ -52,6 +54,8 @@ Validated (user-supplied sample binaries, test-only, never bundled):
 - *v0.8.3-cleanroom re-validation*: same corpus re-run on the rebased Kotlin-only tree — 218f / 28f / 9f / 82f across samples, menu flow intact. `verify_clean_room.sh` PASS.
 - *v0.8.4.1 SYSTEM/GRAPHICS/FILE_RESOURCE pass*: tick/resolver/callback aliases, `vm_sscanf` subset, sandbox disk free-space; graphics `screen_w/h`, image buffer/property/load/release aliases, `create_layer_ex` first-class, image mirror software path; file dual `get_file_size`, hardened open/append, resource init/load aliases. Observed corpus: 76/76 unique `vm_*` first-class, 0 missing.
 - *v0.8.4.1 timed runs*: 30.8M instr / 218 frames, 26.8M / 39 frames, 33.3M / 9 frames, 9.4M / 83 frames `stubbedSymbols=[]`, Flash Lite menu 4 → OK (10 AVM1) → frame 5.
+- *v0.8.4.2 FILE_RESOURCE directory pass*: first-class `vm_file_copy/tell/is_eof/get_modify_time`, hardened copy/rename (same-path, read-only dest, cross-drive, type conflict), guest path helpers (`default_folder_path/filename/path`, host path never leaked), READ_ONLY/HIDDEN/SYSTEM/ARCHIVE attributes via host-side metadata, resource-from-file APIs (`get_resource_offset[_from_file]`, `load_resource_from_file`, `get_data_from_file`, `res_delete/deinit`) with sandbox copy (no host mmap).
+- *v0.8.4.3/0.8.4.4 AUDIO*: host-neutral `MreAudioHost/Request/Snapshot/Event` in `vxp-core` (no Android imports); first-class play/pause/resume/stop/is-playing/get-time/volume/interrupt + MIDI lifecycle; guest buffers copied, file paths sandboxed (32 MiB ceiling); completion marshalled via `MreEventLoop` (codes 1/-1/2/3). v0.8.4.4 adds duration/seek/loop fields, pure-Kotlin RIFF/WAVE + MIDI-PPQN probe, `AudioTrack` base-frame + head-delta position, seek/loop-aware completion marker, `MediaPlayer` duration/seek/loop, Context-aware `open(...)` with audio focus (transient pause/resume, ducking, abandon on stop), `onHostPause/onHostResume/audioSnapshot/seekAudioTo/setAudioLooping`. Corpus smoke after audio: 186f / 91f / 2f, framebuffer hashes unchanged, 76/76 observed first-class.
 
 User-supplied sample binaries are test-only and are not bundled in the ZIP/JAR.
 
@@ -78,7 +82,7 @@ Verify with:
 
 ## Installation
 
-1. Copy `vxp-core/` and `vxp-core-android/` from `VXP-Core-Library-v0.8.4.1/` into your Android project.
+1. Copy `vxp-core/` and `vxp-core-android/` from `VXP-Core-Library-v0.8.4.4/` into your Android project.
 2. Register modules in `settings.gradle.kts`:
 
 ```kotlin
@@ -98,7 +102,7 @@ Or drop in the prebuilt artifact:
 
 ```kotlin
 dependencies {
-    implementation(files("libs/vxp-core-0.8.4.1.jar"))
+    implementation(files("libs/vxp-core-0.8.4.4.jar"))
 }
 ```
 
@@ -106,6 +110,7 @@ dependencies {
 
 ```kotlin
 val session = AndroidVxpCore.open(
+    context = context, // recommended overload: enables audio focus/interruption
     bytes = vxpBytes,
     fileName = fileName,
     storageRoot = File(context.filesDir, "vxp_runtime"),
@@ -120,6 +125,14 @@ val session = AndroidVxpCore.open(
     }
 )
 session.start()
+
+// Host lifecycle (audio-aware):
+// session.onHostPause() in Activity/Fragment onPause()
+// session.onHostResume() in onResume()
+
+// Audio state (host-facing; guest ABI stays inside MreRuntime):
+// val snap = session.audioSnapshot() // positionMs / durationMs
+// session.seekAudioTo(1500); session.setAudioLooping(true)
 
 // Legacy keypad keys from your existing controller:
 session.keyDownLegacy(5) // OK
@@ -142,20 +155,20 @@ Important: show boot text only before the first frame. Once `onFrame()` fires wh
 the guest framebuffer is the only LCD source. Do not overlay instruction counters on it.
 The old native-bridge path has been removed.
 
-See `VXP-Core-Library-v0.8.4.1/docs/INTEGRATE_EXISTING_UI.md`.
+See `VXP-Core-Library-v0.8.4.4/docs/INTEGRATE_EXISTING_UI.md`.
 
-## Project layout (v0.8.4.1)
+## Project layout (v0.8.4.4)
 
 ```
-VXP-Core-Library-v0.8.4.1/
-  vxp-core/            # ARM CPU, ELF, compatibility runtime, heap, file, graphics, PNG decoder
-  vxp-core-android/    # AndroidVxpCore session, Flash Lite backend, Rgb565BitmapAdapter, text rasterizer
-  tests/jvm/           # CPU/ALU, BLX, halfword, PC-semantics, PNG, graphics/file/resource regressions
+VXP-Core-Library-v0.8.4.4/
+  vxp-core/            # ARM CPU, ELF, compatibility runtime, heap, file, graphics, PNG decoder, MreAudioHost/Probe
+  vxp-core-android/    # AndroidVxpCore session, Flash Lite backend, Rgb565BitmapAdapter, text rasterizer, AndroidMreAudioHost
+  tests/jvm/           # CPU/ALU, BLX, halfword, PC-semantics, PNG, graphics/file/resource, audio regressions
   tests/android-graphics-jvm/  # Flash Lite backend test with android.graphics stubs
   tools/               # observed-symbol surface scanner (reads user-supplied binaries only)
-  validation/          # real-run logs, frame sha256, PNG screenshots
+  validation/          # real-run logs, frame sha256, PNG screenshots, AUDIO/COMPATIBILITY reports
   docs/                # TEST_RESULTS.md, INTEGRATE_EXISTING_UI.md, clean-room policy docs
-  dist/vxp-core-0.8.4.1.jar
+  dist/vxp-core-0.8.4.4.jar
 ```
 
 ## Safety
@@ -167,8 +180,8 @@ always return failure. The core never performs billed or off-device actions on b
 
 - Project site: https://qeafivels.com/
 - Version matrix: `./VERSIONS.md`
-- v0.8.4.1 README: `./VXP-Core-Library-v0.8.4.1/README.md`
-- Clean-room policy: `./VXP-Core-Library-v0.8.4.1/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/OBSERVED_COMPATIBILITY_SURFACE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
-- v0.8.4.1 validation: `./VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`
-- Integration guide: `./VXP-Core-Library-v0.8.4.1/docs/INTEGRATE_EXISTING_UI.md`
-- Test results: `./VXP-Core-Library-v0.8.4.1/docs/TEST_RESULTS.md`
+- v0.8.4.4 README: `./VXP-Core-Library-v0.8.4.4/README.md`
+- Clean-room policy: `./VXP-Core-Library-v0.8.4.4/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/OBSERVED_COMPATIBILITY_SURFACE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
+- v0.8.4.4 validation: `./VXP-Core-Library-v0.8.4.4/validation/COMPATIBILITY_v0.8.4.4.md`, `validation/AUDIO_v0.8.4.4.md`
+- Integration guide: `./VXP-Core-Library-v0.8.4.4/docs/INTEGRATE_EXISTING_UI.md`
+- Test results: `./VXP-Core-Library-v0.8.4.4/docs/TEST_RESULTS.md`

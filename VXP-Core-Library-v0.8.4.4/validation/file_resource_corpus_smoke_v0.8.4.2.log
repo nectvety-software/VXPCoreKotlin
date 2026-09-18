@@ -1,0 +1,24 @@
+===== CatBoxMRE.vxp =====
+backend=ELF_ARM
+instructions=3717190
+frames=12
+events=5
+timers=3
+timedOut=true
+lastFrame=240x320#12
+===== RetroMRE.vxp =====
+backend=ELF_ARM
+instructions=2860810
+frames=4
+events=5
+timers=3
+timedOut=true
+lastFrame=240x320#4
+===== Whisk3D.vxp =====
+backend=ELF_ARM
+instructions=4129624
+frames=1
+events=1
+timers=0
+timedOut=true
+lastFrame=240x320#1

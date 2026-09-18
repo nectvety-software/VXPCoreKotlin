@@ -1,0 +1,24 @@
+== vxpcore.ArmClzRegressionKt ==
+[OK] ARM CLZ regression: clz(0x8)=28, clz(0)=32
+== vxpcore.ArmDoublewordRegressionKt ==
+[OK] ARM LDRD/STRD regression: 64-bit pair copied correctly
+== vxpcore.ArmLongMultiplyRegressionKt ==
+[OK] ARM long multiply regression: UMULL + SMULL
+== vxpcore.ArmPcOperandRegressionKt ==
+[OK] ARM Operand2 PC regression: ADD pc,r12,pc -> 0x100108
+== AudioRegressionKt ==
+[OK] v0.8.4.3 AUDIO regression passed
+== PngDecoderRegressionKt ==
+[OK] pure Kotlin PNG decode: 1x1 rgb565=0xf800
+== SystemGraphicsFileResourceRegressionKt ==
+[OK] v0.8.4.3 FILE_RESOURCE regression passed
+== ThumbAluRegressionKt ==
+[OK] Thumb ALU regression: ADC/SBC/ROR/NEG/CMN
+== ThumbBlxRegisterRegressionKt ==
+[OK] Thumb BLX register: LR=0x1003, ARM target, returns to Thumb 0x1002
+== ThumbBlxRegressionKt ==
+[OK] Thumb BLX immediate F001 E9A4 -> ARM target=0x234c LR=0x1005
+== ThumbHalfwordImmediateRegressionKt ==
+[OK] Thumb immediate STRH/LDRH
+== ThumbPcSemanticsRegressionKt ==
+[OK] Thumb high-register PC semantics: ADD r3,PC used current+4

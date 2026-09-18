@@ -25,9 +25,11 @@ VXP -> AndroidVxpCore -> Kotlin 백엔드(ARM/MRE 또는 Flash Lite)
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU, SMS 샌드박스, 장기 회귀 |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC 호환 + 신규 ELF 3종 |
 | `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Kotlin-only 재구성, provenance/준수 문서 |
-| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | 최신: SYSTEM/GRAPHICS/FILE_RESOURCE 별칭, 76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | SYSTEM/GRAPHICS/FILE_RESOURCE 별칭, 76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.2/` | `0.8.4.2` clean-room | `dist/vxp-core-0.8.4.2.jar` | 중간판: FILE_RESOURCE 디렉터리 pass |
+| `VXP-Core-Library-v0.8.4.4/` | `0.8.4.4` clean-room | `dist/vxp-core-0.8.4.4.jar` | 최신: AUDIO 브리지＋재생 정확도＋Android 오디오 통합 |
 
-신규 연동·배포 빌드는 **v0.8.4.1** 사용. 자세한 내용은 `VERSIONS.md`.
+신규 연동·배포 빌드는 **v0.8.4.4** 사용. 자세한 내용은 `VERSIONS.md`.
 
 ## 3. 백엔드
 
@@ -55,7 +57,7 @@ dependencies {
 }
 ```
 
-미리 빌드된 `dist/vxp-core-0.8.4.1.jar` 사용도 가능합니다.
+미리 빌드된 `dist/vxp-core-0.8.4.4.jar` 사용도 가능합니다.
 
 ## 6. 사용법
 
@@ -75,6 +77,9 @@ session.penDown(x, y); session.penMove(x, y); session.penUp(x, y)
 session.stop(); session.close()
 ```
 
+v0.8.4.4 권장: `open(context=...)` 오버로드로 오디오 포커스/인터럽트 활성화,
+`onHostPause()/onHostResume()` 전달, `audioSnapshot()/seekAudioTo()/setAudioLooping()`으로 오디오 상태 조회.
+
 키: `1 UP, 2 DOWN, 3 LEFT, 4 RIGHT, 5 OK, 6 LSK, 7 RSK, 10 CLEAR, 48-57 숫자, 42 *, 35 #`.
 부팅 문구는 첫 프레임 전에만 표시하고, `onFrame()` 이후에는 게임
 프레임버퍼를 유일한 LCD 소스로 사용하세요.
@@ -88,6 +93,8 @@ session.stop(); session.close()
 - clean-room 재검증: 218f / 28f / 9f / 82f, 메뉴 흐름 정상. `verify_clean_room.sh` PASS.
 - v0.8.4.1 별칭 패스: SYSTEM tick/resolver/callback·`vm_sscanf`·샌드박스 용량, GRAPHICS 화면/이미지/로드/미러＋`create_layer_ex`, FILE 이중 조회·엄격 open/append·`vm_resource_init`/`vm_res_load`. 코퍼스 76/76 first-class.
 - v0.8.4.1 timed run: 30.8M/218f, 26.8M/39f, 33.3M/9f, 9.4M/83f, Flash Lite 4→OK(10 AVM1)→5.
+- v0.8.4.2 디렉터리 pass: `vm_file_copy/tell/is_eof/get_modify_time`, 강화 copy/rename, 경로 헬퍼, 속성 메타데이터, resource-from-file(샌드박스 복사).
+- v0.8.4.3/0.8.4.4 오디오: 중립 `MreAudioHost`＋Android 백엔드(WAV→AudioTrack, encoded/MIDI/file→MediaPlayer), play/MIDI/볼륨/인터럽트 handler, 이벤트 루프 콜백; v0.8.4.4는 duration/seek/loop 측정, 오디오 포커스/더킹/수명주기 추가. 오디오 후 스모크: 186f/91f/2f, 해시 불변, 76/76 first-class.
 
 ## 8. 안전
 
@@ -103,3 +110,6 @@ session.stop(); session.close()
 - `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
 - `VXP-Core-Library-v0.8.4.1/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
 - `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`
+- `VXP-Core-Library-v0.8.4.4/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
+- `VXP-Core-Library-v0.8.4.4/validation/COMPATIBILITY_v0.8.4.4.md`
+- `VXP-Core-Library-v0.8.4.4/validation/AUDIO_v0.8.4.4.md`

@@ -1,0 +1,2 @@
+menu frame=4 176x220 shapes=25 buttons=7 sha256=fbf54d2fb50ca06297dfb103f28afd543afb2b421e62f3eacde47fa79c2fb357
+after OK frame=5 actions=10 inputs=1 playing=true sha256=417846c0f972533fd506363cba2fec497f28c57c568fd4341b0848e322222635

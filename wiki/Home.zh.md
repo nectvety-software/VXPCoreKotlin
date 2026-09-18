@@ -25,9 +25,11 @@ VXP -> AndroidVxpCore -> Kotlin 后端（ARM/MRE 或 Flash Lite）
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU、SMS 沙箱、长回归 |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC 兼容 + 3 个新 ELF 标题 |
 | `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | 纯 Kotlin 重构，provenance/合规文档 |
-| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | 最新：SYSTEM/GRAPHICS/FILE_RESOURCE 别名，76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | SYSTEM/GRAPHICS/FILE_RESOURCE 别名，76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.2/` | `0.8.4.2` clean-room | `dist/vxp-core-0.8.4.2.jar` | 中间版：FILE_RESOURCE 目录 pass |
+| `VXP-Core-Library-v0.8.4.4/` | `0.8.4.4` clean-room | `dist/vxp-core-0.8.4.4.jar` | 最新：AUDIO 桥 + 播放精度 + Android 音频集成 |
 
-新项目与发行构建请使用 **v0.8.4.1**。详见 `VERSIONS.md`。
+新项目与发行构建请使用 **v0.8.4.4**。详见 `VERSIONS.md`。
 
 ## 3. 后端支持
 
@@ -55,7 +57,7 @@ dependencies {
 }
 ```
 
-也可直接使用预构建的 `dist/vxp-core-0.8.4.1.jar`。
+也可直接使用预构建的 `dist/vxp-core-0.8.4.4.jar`。
 
 ## 6. 用法
 
@@ -75,6 +77,9 @@ session.penDown(x, y); session.penMove(x, y); session.penUp(x, y)
 session.stop(); session.close()
 ```
 
+v0.8.4.4 建议：使用 `open(context=...)` 重载以启用音频焦点/中断，
+转发 `onHostPause()/onHostResume()`，使用 `audioSnapshot()/seekAudioTo()/setAudioLooping()` 查询音频状态。
+
 按键：`1 上，2 下，3 左，4 右，5 OK，6 LSK，7 RSK，10 清除，48-57 数字，42 *，35 #`。
 首帧之前可显示启动文字；收到 `onFrame()` 后，游戏帧缓冲是唯一的 LCD 来源。
 
@@ -87,6 +92,8 @@ session.stop(); session.close()
 - clean-room 再验证：218f / 28f / 9f / 82f，菜单流程正常。`verify_clean_room.sh` 通过。
 - v0.8.4.1 别名：SYSTEM tick/resolver/callback、`vm_sscanf`、沙箱磁盘；GRAPHICS 屏幕/图像/加载/镜像 + `create_layer_ex`；FILE 双 get-size、严格 open/append、`vm_resource_init`/`vm_res_load`。语料 76/76 first-class。
 - v0.8.4.1 定时运行：30.8M/218f、26.8M/39f、33.3M/9f、9.4M/83f，Flash Lite 4→OK(10 AVM1)→5。
+- v0.8.4.2 目录 pass：`vm_file_copy/tell/is_eof/get_modify_time`、强化 copy/rename、路径助手、属性元数据、resource-from-file（沙箱复制）。
+- v0.8.4.3/0.8.4.4 音频：中立 `MreAudioHost` + Android 后端（WAV→AudioTrack，encoded/MIDI/file→MediaPlayer），play/MIDI/音量/中断 handler，事件循环回调；v0.8.4.4 增加 duration/seek/loop 探测、音频焦点/闪避/生命周期。音频后冒烟：186f/91f/2f，哈希不变，76/76 first-class。
 
 ## 8. 安全
 
@@ -102,3 +109,6 @@ session.stop(); session.close()
 - `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
 - `VXP-Core-Library-v0.8.4.1/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
 - `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`
+- `VXP-Core-Library-v0.8.4.4/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
+- `VXP-Core-Library-v0.8.4.4/validation/COMPATIBILITY_v0.8.4.4.md`
+- `VXP-Core-Library-v0.8.4.4/validation/AUDIO_v0.8.4.4.md`

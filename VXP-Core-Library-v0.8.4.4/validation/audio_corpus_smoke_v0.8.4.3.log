@@ -1,0 +1,21 @@
+=== CatBoxMRE ===
+backend=ELF_ARM
+instructions=9001687
+frames=160
+events=79
+stubbed=__libc_fini, __fini_array_end, __fini_array_start, __gnu_Unwind_Find_exidx, __cxa_call_unexpected, __cxa_begin_cleanup, __cxa_type_match
+frame=240x320 serial=160 sha256=edf756cb672e48f96708afc30ec97a9694178744792087c548a6f0b24a841d0b
+=== RetroMRE ===
+backend=ELF_ARM
+instructions=64572356
+frames=91
+events=92
+stubbed=__deregister_frame_info, __register_frame_info, __fini_array_end, __fini_array_start, __libc_fini
+frame=240x320 serial=91 sha256=2a0ea91b45e355ed267bbe7e4910e34d3376a777c6e9ef5800aef44ebad81532
+=== Whisk3D ===
+backend=ELF_ARM
+instructions=8148936
+frames=2
+events=2
+stubbed=__deregister_frame_info, __register_frame_info, __fini_array_end, __fini_array_start, __libc_fini
+frame=240x320 serial=2 sha256=3ffbf8a8f28842ecb676de08e2a9f45fbc6949703a30b1cb3fc3756dd5b65d8f

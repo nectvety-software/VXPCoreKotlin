@@ -25,9 +25,11 @@ VXP -> AndroidVxpCore -> Kotlin バックエンド（ARM/MRE または Flash Lit
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` | `dist/vxp-core-0.8.2.jar` | Thumb ALU、SMS サンドボックス、長時間回帰 |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` | `dist/vxp-core-0.8.3.jar` | ELF/GCC 互換 + 新規 ELF 3 作品 |
 | `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room | `dist/vxp-core-0.8.3-cleanroom.jar` | Kotlin-only 再構成、provenance/準拠文書 |
-| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | 最新：SYSTEM/GRAPHICS/FILE_RESOURCE 別名、76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room | `dist/vxp-core-0.8.4.1.jar` | SYSTEM/GRAPHICS/FILE_RESOURCE 別名、76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.2/` | `0.8.4.2` clean-room | `dist/vxp-core-0.8.4.2.jar` | 中間版：FILE_RESOURCE ディレクトリ pass |
+| `VXP-Core-Library-v0.8.4.4/` | `0.8.4.4` clean-room | `dist/vxp-core-0.8.4.4.jar` | 最新：AUDIO ブリッジ＋再生精度＋Android 音声統合 |
 
-新規導入・配布ビルドは **v0.8.4.1** を使用。詳細は `VERSIONS.md`。
+新規導入・配布ビルドは **v0.8.4.4** を使用。詳細は `VERSIONS.md`。
 
 ## 3. バックエンド
 
@@ -55,7 +57,7 @@ dependencies {
 }
 ```
 
-ビルド済み `dist/vxp-core-0.8.4.1.jar` の利用も可能です。
+ビルド済み `dist/vxp-core-0.8.4.4.jar` の利用も可能です。
 
 ## 6. 使い方
 
@@ -75,6 +77,9 @@ session.penDown(x, y); session.penMove(x, y); session.penUp(x, y)
 session.stop(); session.close()
 ```
 
+v0.8.4.4 推奨：`open(context=...)` で音声フォーカス/割込みを有効化し、
+`onHostPause()/onHostResume()` を転送、`audioSnapshot()/seekAudioTo()/setAudioLooping()` で音声状態を取得。
+
 キー：`1 上、2 下、3 左、4 右、5 OK、6 LSK、7 RSK、10 クリア、48-57 数字、42 *、35 #`。
 起動文字は最初のフレーム前のみ表示し、`onFrame()` 以降はゲームの
 フレームバッファを唯一の LCD ソースにしてください。
@@ -88,6 +93,8 @@ session.stop(); session.close()
 - clean-room 再検証：218f / 28f / 9f / 82f、メニュー遷移は正常。`verify_clean_room.sh` PASS。
 - v0.8.4.1 別名パス：SYSTEM tick/resolver/callback・`vm_sscanf`・sandbox容量、GRAPHICS 画面/画像/読込/mirror＋`create_layer_ex`、FILE dual取得・厳格open/append・`vm_resource_init`/`vm_res_load`。コーパス76/76 first-class。
 - v0.8.4.1 timed run：30.8M/218f、26.8M/39f、33.3M/9f、9.4M/83f、Flash Lite 4→OK(10 AVM1)→5。
+- v0.8.4.2 ディレクトリ pass：`vm_file_copy/tell/is_eof/get_modify_time`、強化 copy/rename、パス helper、属性メタデータ、resource-from-file（sandbox 経由コピー）。
+- v0.8.4.3/0.8.4.4 音声：中立 `MreAudioHost`＋Android バックエンド（WAV→AudioTrack、encoded/MIDI/file→MediaPlayer）、play/MIDI/音量/割込み handler、イベントループ経由コールバック；v0.8.4.4 は duration/seek/loop 計測、音声フォーカス/ダッキング/ライフサイクルを追加。音声後の smoke：186f/91f/2f、ハッシュ不変、76/76 first-class。
 
 ## 8. 安全性
 
@@ -103,3 +110,6 @@ session.stop(); session.close()
 - `VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
 - `VXP-Core-Library-v0.8.4.1/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
 - `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`
+- `VXP-Core-Library-v0.8.4.4/docs/OBSERVED_COMPATIBILITY_SURFACE.md`
+- `VXP-Core-Library-v0.8.4.4/validation/COMPATIBILITY_v0.8.4.4.md`
+- `VXP-Core-Library-v0.8.4.4/validation/AUDIO_v0.8.4.4.md`

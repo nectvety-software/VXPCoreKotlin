@@ -1,0 +1,14 @@
+VXP-Core v0.8.4.1 FILE_RESOURCE regression
+==========================================
+[PASS] vm_file_open mode/sandbox validation
+[PASS] vm_file_read partial read + EOF + invalid length/handle
+[PASS] vm_file_write permission + invalid length/output pointer
+[PASS] vm_file_seek SET/CUR/END + negative-target rejection
+[PASS] append-after-seek writes at EOF
+[PASS] resource ASCII/UCS2 lookup + size output validation
+[PASS] vm_resource_get_data range + zero-byte probe
+[PASS] ELF .vm_res absolute-offset mapping
+[PASS] stale mapped resource tail clearing
+[PASS] full JVM CPU/image regression suite
+[PASS] CatBoxMRE / RetroMRE / Whisk3D focused smoke run
+[PASS] clean-room and Kotlin-only verification

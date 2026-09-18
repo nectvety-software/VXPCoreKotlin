@@ -21,7 +21,9 @@ VXP file
 | `VXP-Core-Library-v0.8.2/` | `0.8.2` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + messaging sandbox + regression dài |
 | `VXP-Core-Library-v0.8.3/` | `0.8.3` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3.jar` | Tương thích ELF/GCC + 3 sample ELF mới |
 | `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebase Kotlin-only, bỏ catalog suy từ SDK, + docs provenance/compliance |
-| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.4.1.jar` | Mới nhất: SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.4.1.jar` | SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed first-class |
+| `VXP-Core-Library-v0.8.4.2/` | `0.8.4.2` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.4.2.jar` | Bản trung gian: FILE_RESOURCE directory/path/resource-from-file pass (151 files) |
+| `VXP-Core-Library-v0.8.4.4/` | `0.8.4.4` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.4.4.jar` | Mới nhất: AUDIO bridge + playback accuracy + tích hợp audio-system Android (179 files) |
 
 > Ghi chú: `CHANGELOG v0.8.2` có nhắc patch `v0.8.1` (PNG, Thumb BLX immediate, App Manager, operator-code)
 > nhưng trong repo hiện chỉ lưu các gói `v0.8`, `v0.8.2`, `v0.8.3`, `v0.8.3-cleanroom`, `v0.8.4.1`.
@@ -151,7 +153,33 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
   Flash Lite menu 4 → OK (10 AVM1) → frame 5.
 - Thêm test graphics/file/resource + `docs/OBSERVED_COMPATIBILITY_SURFACE.md` (tổng 141 files).
 
+### 5.6 v0.8.4.2 — FILE_RESOURCE directory/path/resource-from-file pass (clean-room, bản trung gian)
+
+- FILE: first-class `vm_file_copy/tell/is_eof/get_modify_time`; copy/rename cứng (same-path, read-only dest, cross-drive, directory/type conflict, metadata remap).
+- Path helpers: `vm_get_default_folder_path/filename/path`; host path không lộ ra guest.
+- Attributes READ_ONLY/HIDDEN/SYSTEM/ARCHIVE giữ bằng metadata host-side (nhất quán Linux/Android).
+- Resource-from-file: `vm_get_resource_offset[_from_file]`, `vm_load_resource_from_file`, `vm_resource_get_data_from_file`, `vm_res_delete/deinit`; external data copy qua sandbox vào guest memory/heap, không mmap file host.
+- Regression cũ CPU/Thumb/PNG PASS; corpus 76/76 first-class giữ nguyên.
+
+### 5.7 v0.8.4.3 / v0.8.4.4 — AUDIO host-neutral bridge + playback accuracy (clean-room)
+
+- v0.8.4.3: `MreAudioHost/Request/Snapshot/Event` trong `vxp-core` (không import Android API); handlers play/pause/resume/stop/is-playing/get-time/volume/interrupt + MIDI lifecycle; buffer copy, file qua sandbox (ceiling 32 MiB); completion marshal qua `MreEventLoop`; `StateOnlyMreAudioHost` cho headless/JVM; `AndroidMreAudioHost` (WAV→AudioTrack, encoded/MIDI/file→MediaPlayer, cache cleanup); `open()` nhận optional `audioHost`; `AudioRegression.kt` PASS.
+- v0.8.4.4: duration/seek/loop/lifecycle trong `Snapshot/Host`; probe Kotlin thuần RIFF/WAVE + MIDI-PPQN; `AudioTrack` base-frame + head-delta, completion marker sau seek/loop, arm-before-play; `MediaPlayer` duration/seek/loop + start offset; `open(context=...)` + `AndroidMreAudioHost(context, cacheDir)` với audio focus (transient pause/resume, ducking 20%, abandon on stop); API `onHostPause/onHostResume/audioSnapshot/seekAudioTo/setAudioLooping`; callback vẫn qua `MreEventLoop`, không thread Android nào vào `ArmCpu`.
+- Smoke sau audio: 186f / 91f / 2f, hash framebuffer không đổi, 76/76 observed first-class; xem `validation/AUDIO_v0.8.4.4.md`, `validation/COMPATIBILITY_v0.8.4.4.md`.
+- Tổng 179 files (v0.8.4.4 gộp cả 0.8.4.2 + 0.8.4.3).
+
 ## 6. Thay đổi chi tiết
+
+### v0.8.4.4
+- AUDIO playback accuracy + tích hợp audio-system Android như mục 5.7; `vxp-core` giữ JVM-neutral.
+- Smoke corpus + toàn bộ regression cũ PASS; hash framebuffer không đổi.
+- Bản khuyến nghị cho tích hợp/phân phối mới.
+
+### v0.8.4.3
+- AUDIO host-neutral bridge + Android playback như mục 5.7 (được gộp trong gói v0.8.4.4).
+
+### v0.8.4.2
+- FILE_RESOURCE directory/path/resource-from-file pass như mục 5.6 (được gộp trong gói v0.8.4.4).
 
 ### v0.8.4.1
 - SYSTEM/GRAPHICS/FILE_RESOURCE first-class aliases như mục 5.5; giữ clean-room (không JNI/NDK/C/C++).
@@ -196,11 +224,13 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
 - v0.8.3: thêm 7 CPU regression tests (tổng 11 tests/jvm), validation mở rộng, ma trận tương thích, CSV + SHA256 (tổng 116 files).
 - v0.8.3-cleanroom: + `NOTICE-CLEANROOM.txt`, `verify_clean_room.sh`, probe nguồn, docs clean-room/provenance/checklist, validation clean-room (tổng 90 files).
 - v0.8.4.1: + `docs/OBSERVED_COMPATIBILITY_SURFACE.md`, tool quét symbol, test graphics/file/resource, validation tương thích + PNG/log (tổng 141 files).
+- v0.8.4.2: + resource-from-file APIs, path helpers, attribute metadata, validation `FILE_RESOURCE_v0.8.4.2.md` (tổng 151 files, bản trung gian).
+- v0.8.4.4: + `MreAudioHost/Probe`, `AndroidMreAudioHost`, `AudioRegression`, docs `AUDIO_v0.8.4.x.md`, validation audio/corpus (tổng 179 files).
 
 ## 8. Nên dùng bản nào?
 
-- Dùng `v0.8.4.1` cho mọi tích hợp mới và mọi bản phát hành/phân phối: superset clean-room của v0.8.3 + alias SYSTEM/GRAPHICS/FILE_RESOURCE, corpus 76/76.
-- `v0.8.3-cleanroom` giữ lại để đối chiếu trước alias pass; `v0.8.3` thường để đối chiếu trước rebase.
+- Dùng `v0.8.4.4` cho mọi tích hợp mới và mọi bản phát hành/phân phối: superset clean-room đầy đủ nhất (audio + alias SYSTEM/GRAPHICS/FILE_RESOURCE), corpus 76/76.
+- `v0.8.4.2` chỉ để đối chiếu bước trung gian; `v0.8.4.1` để đối chiếu trước audio.
 - Chỉ tham khảo `v0.8.0` khi cần đối chiếu sha frame cũ hoặc hành vi trước Thumb-ALU fix.
 - `v0.8.2` giữ lại để đối chiếu regression dài 23.5M insn trước thay đổi CPU v0.8.3.
 
@@ -213,4 +243,6 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
 - `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
 - `VXP-Core-Library-v0.8.4.1/README.md`, `CHANGELOG.md`, `docs/OBSERVED_COMPATIBILITY_SURFACE.md`
 - `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`, `validation/observed_surface_v0.8.4.1.txt`
+- `VXP-Core-Library-v0.8.4.4/README.md`, `CHANGELOG.md`
+- `VXP-Core-Library-v0.8.4.4/validation/COMPATIBILITY_v0.8.4.4.md`, `validation/AUDIO_v0.8.4.4.md`
 - `vxp-core/.../VxpLibrary.kt: VERSION`, `vxp-core-android/.../AndroidVxpCore.kt: VERSION`
