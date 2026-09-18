@@ -8,7 +8,7 @@ please credit with a link to https://qeafivels.com/.
 
 ## 1. Overview
 
-Kotlin-only core for running MediaTek `.vxp` packages inside an existing
+Kotlin-only core for running `.vxp` packages inside an existing
 Android UI. No Activity/View/Compose, no JNI/NDK/CMake/C/C++, no
 `System.loadLibrary`. Guest ARM/Thumb code is interpreted by Kotlin.
 
@@ -32,9 +32,9 @@ Use **v0.8.4.1** for new integrations and any distribution build. See `VERSIONS.
 ## 3. Backends
 
 - `ELF32 ARM` → Kotlin ARM/Thumb + MRE: supported, v0.8.3 adds GCC `gcc_entry` + `.init_array` bootstrap; v0.8.4.1 adds observed-alias first-class handlers.
-- Raw ARM + zlib (`RAW_ARM_ZLIB`, Gameloft) → Kotlin ARM/Thumb + MRE: supported.
+- Raw ARM + zlib (`RAW_ARM_ZLIB`) → Kotlin ARM/Thumb + MRE: supported.
 - Flash Lite `FWS/CWS` → Android Kotlin + SWF/AVM1: compatibility-first.
-- Unknown → detector returns `UNKNOWN`, no MREmu fallback.
+- Unknown → detector returns `UNKNOWN`, no fallback to another emulator.
 
 ## 4. Requirements
 
@@ -81,14 +81,14 @@ framebuffer is the only LCD source.
 
 ## 7. Validation
 
-- Spider-Man (`RAW_ARM_ZLIB`): 23,524,795 insn / 425 frames / 440 events / 424 timers, 240x320 RGB565, no fault, `stubbedSymbols = []`.
-- Crazy Taxi (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 via real AVM1 action.
-- v0.8.3 ELF titles: `CatBoxMRE` gameplay (218 frames / 28.3M instr), `RetroMRE` menu (18 frames / 11.8M instr, real `vm_find_*` + UCS2 NUL fix), `Whisk3D` 3D scene (9 frames / 33.3M instr).
+- Sample A (`RAW_ARM_ZLIB`): 23,524,795 insn / 425 frames / 440 events / 424 timers, 240x320 RGB565, no fault, `stubbedSymbols = []`.
+- Sample B (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 via real AVM1 action.
+- v0.8.3 ELF samples: gameplay sample (218 frames / 28.3M instr), launcher-menu sample (18 frames / 11.8M instr, real `vm_find_*` + UCS2 NUL fix), 3D scene sample (9 frames / 33.3M instr).
 - v0.8.3 CPU fixes: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + long multiply, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` wildcard.
-- v0.8.3-cleanroom re-validation: CatBoxMRE 30.1M / 218f, RetroMRE 19.0M / 28f, Whisk3D 33.3M / 9f, Spider-Man 9.5M / 82f, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
+- v0.8.3-cleanroom re-validation: 218f / 28f / 9f / 82f across samples, menu flow intact. `verify_clean_room.sh` PASS.
 - v0.8.4.1 alias pass: SYSTEM tick/resolver/callbacks, `vm_sscanf`, sandbox disk space; GRAPHICS screen/image/load/mirror aliases + `create_layer_ex`; FILE dual get-size, hardened open/append, `vm_resource_init`/`vm_res_load`. Corpus 76/76 first-class via `tools/observed_vxp_surface.py`.
-- v0.8.4.1 timed runs: CatBoxMRE 30.8M/218f, RetroMRE 26.8M/39f, Whisk3D 33.3M/9f, Spider-Man 9.4M/83f `stubbedSymbols=[]`, Crazy Taxi 4→OK(10 AVM1)→5.
-- Clean-room policy: no SDK headers/libs/catalogs, no MREmu, no JNI/NDK/C/C++; see `docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`.
+- v0.8.4.1 timed runs: 30.8M/218f, 26.8M/39f, 33.3M/9f, 9.4M/83f `stubbedSymbols=[]`, Flash Lite menu 4→OK(10 AVM1)→5.
+- Clean-room policy: no vendor headers/libs/catalogs, no third-party emulator code, no JNI/NDK/C/C++; see `docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`.
 
 ## 8. Safety
 

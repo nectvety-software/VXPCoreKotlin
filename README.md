@@ -1,13 +1,13 @@
 # VXP-Core Library (Kotlin-only)
 
-A Kotlin-only core library for running MediaTek `.vxp` packages inside an existing Android UI.
+A Kotlin-only core library for running `.vxp` packages inside an existing Android UI.
 No `Activity / View / Compose`, no `JNI / NDK / CMake / C / C++`, no `System.loadLibrary`.
 Guest ARM/Thumb code in `.vxp` is data executed by a Kotlin interpreter, never as Android native code.
 
 ```
 VXP file
  -> AndroidVxpCore
- -> Kotlin backend (ARM/MRE or Flash Lite)
+ -> Kotlin backend (ARM/runtime or Flash Lite)
  -> FrameSnapshot RGB565
  -> your controller
  -> existing EmulatorScreenCanvas / UI
@@ -26,12 +26,12 @@ Maintained by **DOXUANHOP**.
 | Folder | Version (`VxpCoreLibrary.VERSION` / `AndroidVxpCore.VERSION`) | Artifact | Notes |
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` | `dist/vxp-core-0.8.0.jar` | First library split, UI removed from deliverable |
-| `VXP-Core-Library-v0.8.2/` | `0.8.2` (core + Android facade in sync) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + SMS sandbox + long regression |
-| `VXP-Core-Library-v0.8.3/` | `0.8.3` (core + Android facade in sync) | `dist/vxp-core-0.8.3.jar` | ELF/GCC compat (R_ARM_RELATIVE, gcc_entry, CLZ/LDRD/long-multiply) + 3 new ELF titles |
+| `VXP-Core-Library-v0.8.2/` | `0.8.2` (core + Android facade in sync) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + messaging sandbox + long regression |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` (core + Android facade in sync) | `dist/vxp-core-0.8.3.jar` | ELF/GCC compat (R_ARM_RELATIVE, gcc_entry, CLZ/LDRD/long-multiply) + 3 new ELF samples |
 | `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room edition | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebased Kotlin-only, no SDK-derived catalog, + provenance/compliance docs |
 | `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room edition | `dist/vxp-core-0.8.4.1.jar` | Latest, SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed symbols first-class |
 
-See `VERSIONS.md` for the full Vietnamese version matrix, and
+See `VERSIONS.md` for the full version matrix, and
 `VXP-Core-Library-v0.8.4.1/CHANGELOG.md` for details.
 Use `v0.8.4.1` for all new integrations and any distribution build.
 
@@ -39,21 +39,21 @@ Use `v0.8.4.1` for all new integrations and any distribution build.
 
 | VXP type | Backend | Status |
 |---|---|---|
-| `ELF32 ARM` | Kotlin ARM/Thumb + MRE | Supported |
-| Gameloft raw ARM + zlib (`RAW_ARM_ZLIB`) | Kotlin ARM/Thumb + MRE | Supported |
+| `ELF32 ARM` | Kotlin ARM/Thumb + compatibility runtime | Supported |
+| Raw ARM + zlib (`RAW_ARM_ZLIB`) | Kotlin ARM/Thumb + compatibility runtime | Supported |
 | Flash Lite `FWS / CWS` | Android Kotlin + SWF/AVM1 (`android.graphics`) | Compatibility-first |
-| Unknown / proprietary | Detector | Returns `UNKNOWN`, no MREmu fallback |
+| Unknown / proprietary | Detector | Returns `UNKNOWN`, no fallback to another emulator |
 
-Validated:
+Validated (user-supplied sample binaries, test-only, never bundled):
 
-- *The Amazing Spider-Man - The Daily Bugle* (`RAW_ARM_ZLIB`): 23,524,795 instructions / 425 frames / 440 events / 424 timers, 240x320 RGB565, no CPU/memory fault, `stubbedSymbols = []` (v0.8.2; re-validated in v0.8.3 with 78 frames / 9.4M instr, no stubs).
-- *CrazyTaxi_1.0.vxp* (`FLASH_LITE`): stage 176x220, 20 FPS, 35 frames, 25 shapes / 12 sprites / 5 JPEG3 / 7 buttons, startup menu frame 4, `OK` runs a real AVM1 `ButtonCondAction` to frame 5.
-- *v0.8.3 new ELF titles*: `CatBoxMRE.vxp` gameplay (218 frames / 28.3M instr), `RetroMRE.vxp` menu `RETRO MRE / PIXEL LAUNCHER` (18 frames / 11.8M instr, real `vm_find_first/next/close` + UCS2 NUL fix), `Whisk3D.vxp` 3D scene cube/sphere/cone (9 frames / 33.3M instr).
-- *v0.8.3-cleanroom re-validation*: CatBoxMRE 30.1M / 218f, RetroMRE 19.0M / 28f, Whisk3D 33.3M / 9f, Spider-Man 9.5M / 82f, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
-- *v0.8.4.1 SYSTEM/GRAPHICS/FILE_RESOURCE pass*: tick/resolver/callback aliases (`vm_get_tick`, `vm_get_sym_entry`, `vm_reg_key/touch/system_event_callback`, `vm_get_removable_driver` spelling), `vm_sscanf` subset, sandbox disk free-space; graphics `screen_w/h`, image buffer/property/load/release aliases, `create_layer_ex` first-class, `vm_graphic_mirror` software path; file dual `get_file_size`, hardened open/append, `vm_resource_init`/`vm_res_load` aliases. Observed corpus: 76/76 unique `vm_*` first-class, 0 missing.
-- *v0.8.4.1 timed runs*: CatBoxMRE 30.8M instr / 218 frames, RetroMRE 26.8M / 39 frames, Whisk3D 33.3M / 9 frames, Spider-Man 9.4M / 83 frames `stubbedSymbols=[]`, Crazy Taxi menu 4 → OK (10 AVM1) → frame 5.
+- *Sample A* (`RAW_ARM_ZLIB`): 23,524,795 instructions / 425 frames / 440 events / 424 timers, 240x320 RGB565, no CPU/memory fault, `stubbedSymbols = []` (v0.8.2; re-validated in v0.8.3 with 78 frames / 9.4M instr, no stubs).
+- *Sample B* (`FLASH_LITE`): stage 176x220, 20 FPS, 35 frames, 25 shapes / 12 sprites / 5 JPEG3 / 7 buttons, startup menu frame 4, `OK` runs a real AVM1 button action to frame 5.
+- *v0.8.3 new ELF samples*: gameplay sample (218 frames / 28.3M instr), launcher-menu sample with file enumeration (18 frames / 11.8M instr, real `vm_find_first/next/close` + UCS2 NUL fix), 3D scene sample (9 frames / 33.3M instr).
+- *v0.8.3-cleanroom re-validation*: same corpus re-run on the rebased Kotlin-only tree — 218f / 28f / 9f / 82f across samples, menu flow intact. `verify_clean_room.sh` PASS.
+- *v0.8.4.1 SYSTEM/GRAPHICS/FILE_RESOURCE pass*: tick/resolver/callback aliases, `vm_sscanf` subset, sandbox disk free-space; graphics `screen_w/h`, image buffer/property/load/release aliases, `create_layer_ex` first-class, image mirror software path; file dual `get_file_size`, hardened open/append, resource init/load aliases. Observed corpus: 76/76 unique `vm_*` first-class, 0 missing.
+- *v0.8.4.1 timed runs*: 30.8M instr / 218 frames, 26.8M / 39 frames, 33.3M / 9 frames, 9.4M / 83 frames `stubbedSymbols=[]`, Flash Lite menu 4 → OK (10 AVM1) → frame 5.
 
-User-supplied commercial binaries are test-only and are not bundled in the ZIP/JAR.
+User-supplied sample binaries are test-only and are not bundled in the ZIP/JAR.
 
 ## Requirements / related installs
 
@@ -78,7 +78,7 @@ Verify with:
 
 ## Installation
 
-1. Copy `vxp-core/` and `vxp-core-android/` from `VXP-Core-Library-v0.8.2/` into your Android project.
+1. Copy `vxp-core/` and `vxp-core-android/` from `VXP-Core-Library-v0.8.4.1/` into your Android project.
 2. Register modules in `settings.gradle.kts`:
 
 ```kotlin
@@ -98,7 +98,7 @@ Or drop in the prebuilt artifact:
 
 ```kotlin
 dependencies {
-    implementation(files("libs/vxp-core-0.8.2.jar"))
+    implementation(files("libs/vxp-core-0.8.4.1.jar"))
 }
 ```
 
@@ -121,13 +121,13 @@ val session = AndroidVxpCore.open(
 )
 session.start()
 
-// Nokia legacy keys from your existing controller:
+// Legacy keypad keys from your existing controller:
 session.keyDownLegacy(5) // OK
 session.keyUpLegacy(5)
 session.keyDownLegacy(6) // LSK
 session.keyDownLegacy(7) // RSK
 
-// Touch (main path for MRE ARM backend):
+// Touch (main path for the ARM backend):
 session.penDown(x, y)
 session.penMove(x, y)
 session.penUp(x, y)
@@ -139,41 +139,36 @@ session.close()
 Legacy key map: `1 UP, 2 DOWN, 3 LEFT, 4 RIGHT, 5 OK, 6 LSK, 7 RSK, 10 CLEAR, 48-57 digits, 42 *, 35 #`.
 
 Important: show boot text only before the first frame. Once `onFrame()` fires while `Running`,
-the game framebuffer is the only LCD source. Do not overlay instruction counters on it.
-The old path `MreNativeVxpApp -> NativeVxpBridge -> JNI -> vxp_runner.cpp` is removed.
+the guest framebuffer is the only LCD source. Do not overlay instruction counters on it.
+The old native-bridge path has been removed.
 
-See `VXP-Core-Library-v0.8.2/docs/INTEGRATE_EXISTING_UI.md`.
+See `VXP-Core-Library-v0.8.4.1/docs/INTEGRATE_EXISTING_UI.md`.
 
-## Project layout (v0.8.2)
+## Project layout (v0.8.4.1)
 
 ```
-VXP-Core-Library-v0.8.2/
-  vxp-core/            # ARM CPU, ELF, MRE runtime, heap, file, graphics, PNG decoder
+VXP-Core-Library-v0.8.4.1/
+  vxp-core/            # ARM CPU, ELF, compatibility runtime, heap, file, graphics, PNG decoder
   vxp-core-android/    # AndroidVxpCore session, Flash Lite backend, Rgb565BitmapAdapter, text rasterizer
-  tests/jvm/           # SpiderMan, Thumb ALU/BLX, PNG decoder regressions
-  tests/android-graphics-jvm/  # Crazy Taxi backend test with android.graphics stubs
+  tests/jvm/           # CPU/ALU, BLX, halfword, PC-semantics, PNG, graphics/file/resource regressions
+  tests/android-graphics-jvm/  # Flash Lite backend test with android.graphics stubs
+  tools/               # observed-symbol surface scanner (reads user-supplied binaries only)
   validation/          # real-run logs, frame sha256, PNG screenshots
-  docs/                # TEST_RESULTS.md, INTEGRATE_EXISTING_UI.md
-  dist/vxp-core-0.8.2.jar
+  docs/                # TEST_RESULTS.md, INTEGRATE_EXISTING_UI.md, clean-room policy docs
+  dist/vxp-core-0.8.4.1.jar
 ```
 
 ## Safety
 
-`vm_send_sms` is a sandboxed compatibility API that always returns failure.
-The core never sends real SMS, Intents, or network billing requests.
-Strings such as `GL_Demo / UNLOCK / SMS` in test binaries are runtime data only.
+Messaging-related guest calls (e.g. `vm_send_sms`) are sandboxed compatibility APIs that
+always return failure. The core never performs billed or off-device actions on behalf of guests.
 
 ## Links
 
 - Project site: https://qeafivels.com/
 - Version matrix: `./VERSIONS.md`
-- v0.8.3 README: `./VXP-Core-Library-v0.8.3/README.md`
-- v0.8.3-cleanroom: `./VXP-Core-Library-v0.8.3-cleanroom/README.md`, `NOTICE-CLEANROOM.txt`
 - v0.8.4.1 README: `./VXP-Core-Library-v0.8.4.1/README.md`
 - Clean-room policy: `./VXP-Core-Library-v0.8.4.1/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/OBSERVED_COMPATIBILITY_SURFACE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
 - v0.8.4.1 validation: `./VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`
-- Clean-room policy: `./VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
-- Clean-room validation: `./VXP-Core-Library-v0.8.3-cleanroom/validation/CLEANROOM_VALIDATION_v0.8.3.md`
-- Integration guide: `./VXP-Core-Library-v0.8.3/docs/INTEGRATE_EXISTING_UI.md`
-- Test results: `./VXP-Core-Library-v0.8.3/docs/TEST_RESULTS.md`
-- Compatibility matrix: `./VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`
+- Integration guide: `./VXP-Core-Library-v0.8.4.1/docs/INTEGRATE_EXISTING_UI.md`
+- Test results: `./VXP-Core-Library-v0.8.4.1/docs/TEST_RESULTS.md`

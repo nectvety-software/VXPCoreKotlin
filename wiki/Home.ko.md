@@ -8,7 +8,7 @@ https://qeafivels.com/ 링크 표기를 부탁드립니다.
 
 ## 1. 개요
 
-기존 Android UI에 MediaTek `.vxp`를 내장하기 위한 Kotlin-only 코어.
+기존 Android UI에 `.vxp`를 내장하기 위한 Kotlin-only 코어.
 Activity/View/Compose 없음, JNI/NDK/CMake/C/C++ 없음,
 `System.loadLibrary` 없음. Guest ARM/Thumb 코드는 Kotlin 인터프리터가 실행합니다.
 
@@ -32,9 +32,9 @@ VXP -> AndroidVxpCore -> Kotlin 백엔드(ARM/MRE 또는 Flash Lite)
 ## 3. 백엔드
 
 - `ELF32 ARM` → Kotlin ARM/Thumb + MRE: 지원. v0.8.3에서 GCC `gcc_entry` + `.init_array` 부트스트랩 추가.
-- Raw ARM + zlib(`RAW_ARM_ZLIB`, Gameloft) → Kotlin ARM/Thumb + MRE: 지원.
+- Raw ARM + zlib(`RAW_ARM_ZLIB`) → Kotlin ARM/Thumb + MRE: 지원.
 - Flash Lite `FWS/CWS` → Android Kotlin + SWF/AVM1: 호환성 우선.
-- 알 수 없음 → 탐지기가 `UNKNOWN` 반환, MREmu 폴백 없음.
+- 알 수 없음 → 탐지기가 `UNKNOWN` 반환, 다른 에뮬레이터 폴백 없음.
 
 ## 4. 요구 사항
 
@@ -81,13 +81,13 @@ session.stop(); session.close()
 
 ## 7. 검증
 
-- 스파이더맨(`RAW_ARM_ZLIB`): 23,524,795 명령 / 425 프레임 / 440 이벤트 / 424 타이머, 240x320 RGB565, 결함 없음, `stubbedSymbols = []`.
-- Crazy Taxi(`FLASH_LITE`): 176x220 @20fps, 35 프레임, 메뉴 4번 → OK → 실제 AVM1로 5번 프레임 이동.
-- v0.8.3 신규 ELF 3종: `CatBoxMRE` 게임플레이(218 프레임 / 28.3M 명령), `RetroMRE` 메뉴(18 프레임 / 11.8M 명령, 실제 `vm_find_*` + UCS2 NUL 수정), `Whisk3D` 3D 장면(9 프레임 / 33.3M 명령).
+- 샘플 A(`RAW_ARM_ZLIB`): 23,524,795 명령 / 425 프레임 / 440 이벤트 / 424 타이머, 240x320 RGB565, 결함 없음, `stubbedSymbols = []`.
+- 샘플 B(`FLASH_LITE`): 176x220 @20fps, 35 프레임, 메뉴 4번 → OK → 실제 AVM1로 5번 프레임 이동.
+- v0.8.3 신규 ELF 3종: 게임플레이(218 프레임 / 28.3M 명령), 메뉴(18 프레임 / 11.8M 명령, 실제 `vm_find_*` + UCS2 NUL 수정), 3D 장면(9 프레임 / 33.3M 명령).
 - v0.8.3 CPU 수정: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + long multiply, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` 와일드카드.
-- clean-room 재검증: CatBoxMRE 30.1M/218f, RetroMRE 19.0M/28f, Whisk3D 33.3M/9f, Spider-Man 9.5M/82f, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
+- clean-room 재검증: 218f / 28f / 9f / 82f, 메뉴 흐름 정상. `verify_clean_room.sh` PASS.
 - v0.8.4.1 별칭 패스: SYSTEM tick/resolver/callback·`vm_sscanf`·샌드박스 용량, GRAPHICS 화면/이미지/로드/미러＋`create_layer_ex`, FILE 이중 조회·엄격 open/append·`vm_resource_init`/`vm_res_load`. 코퍼스 76/76 first-class.
-- v0.8.4.1 timed run: CatBoxMRE 30.8M/218f, RetroMRE 26.8M/39f, Whisk3D 33.3M/9f, Spider-Man 9.4M/83f, Crazy Taxi 4→OK(10 AVM1)→5.
+- v0.8.4.1 timed run: 30.8M/218f, 26.8M/39f, 33.3M/9f, 9.4M/83f, Flash Lite 4→OK(10 AVM1)→5.
 
 ## 8. 안전
 

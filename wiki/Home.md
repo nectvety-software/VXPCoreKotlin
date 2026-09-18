@@ -10,6 +10,7 @@ Choose your language / Chọn ngôn ngữ / 选择语言 / 言語を選択 / 언
 | 日本語 | [Home.ja](Home.ja.md) |
 | 한국어 | [Home.ko](Home.ko.md) |
 
-All pages cover: overview, versions v0.8 / v0.8.2, backends, requirements,
-installation, usage (`AndroidVxpCore`), key map, validation (Spider-Man,
-Crazy Taxi), safety, credits (https://qeafivels.com/).
+All pages cover: overview, versions v0.8 / v0.8.2 / v0.8.3 / v0.8.4.1, backends, requirements,
+installation, usage (`AndroidVxpCore`), key map, validation (RAW/Flash Lite/ELF samples),
+safety, credits (https://qeafivels.com/). Sample binaries are user-supplied test inputs
+and are never bundled; docs use generic labels (Sample A–E) with no third-party references.

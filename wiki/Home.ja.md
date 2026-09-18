@@ -8,7 +8,7 @@ https://qeafivels.com/ へのリンク表記をお願いします。
 
 ## 1. 概要
 
-既存 Android UI に MediaTek `.vxp` を組み込むための Kotlin-only コア。
+既存 Android UI に `.vxp` を組み込むための Kotlin-only コア。
 Activity/View/Compose なし、JNI/NDK/CMake/C/C++ なし、
 `System.loadLibrary` なし。Guest ARM/Thumb は Kotlin インタプリタが実行します。
 
@@ -32,9 +32,9 @@ VXP -> AndroidVxpCore -> Kotlin バックエンド（ARM/MRE または Flash Lit
 ## 3. バックエンド
 
 - `ELF32 ARM` → Kotlin ARM/Thumb + MRE：対応。v0.8.3 で GCC `gcc_entry` + `.init_array` 起動を追加。
-- Raw ARM + zlib（`RAW_ARM_ZLIB`、Gameloft）→ Kotlin ARM/Thumb + MRE：対応。
+- Raw ARM + zlib（`RAW_ARM_ZLIB`）→ Kotlin ARM/Thumb + MRE：対応。
 - Flash Lite `FWS/CWS` → Android Kotlin + SWF/AVM1：互換優先。
-- 不明形式 → 検出器が `UNKNOWN` を返し、MREmu へフォールバックしません。
+- 不明形式 → 検出器が `UNKNOWN` を返し、他のエミュレータへフォールバックしません。
 
 ## 4. 必要環境
 
@@ -81,13 +81,13 @@ session.stop(); session.close()
 
 ## 7. 検証
 
-- スパイダーマン（`RAW_ARM_ZLIB`）：23,524,795 命令 / 425 フレーム / 440 イベント / 424 タイマ、240x320 RGB565、フォルトなし、`stubbedSymbols = []`。
-- Crazy Taxi（`FLASH_LITE`）：176x220 @20fps、全 35 フレーム、メニュー 4 枚目 → OK → 実 AVM1 で 5 枚目へ。
-- v0.8.3 新規 ELF 3 作品：`CatBoxMRE` ゲームプレイ（218 フレーム / 28.3M 命令）、`RetroMRE` メニュー（18 フレーム / 11.8M 命令、実 `vm_find_*` + UCS2 NUL 修正）、`Whisk3D` 3D シーン（9 フレーム / 33.3M 命令）。
+- サンプル A（`RAW_ARM_ZLIB`）：23,524,795 命令 / 425 フレーム / 440 イベント / 424 タイマ、240x320 RGB565、フォルトなし、`stubbedSymbols = []`。
+- サンプル B（`FLASH_LITE`）：176x220 @20fps、全 35 フレーム、メニュー 4 枚目 → OK → 実 AVM1 で 5 枚目へ。
+- v0.8.3 新規 ELF 3 件：ゲームプレイ（218 フレーム / 28.3M 命令）、メニュー（18 フレーム / 11.8M 命令、実 `vm_find_*` + UCS2 NUL 修正）、3D シーン（9 フレーム / 33.3M 命令）。
 - v0.8.3 CPU 修正：`R_ARM_RELATIVE` sym-0、`gcc_entry`/`.init_array`、Thumb BLX-reg + PC(+4) + STRH/LDRH、ARM CLZ + LDRD/STRD + ロング乗算、Operand2 PC(+8)、`_vm_log_*`、`vm_find_*` ワイルドカード。
-- clean-room 再検証：CatBoxMRE 30.1M/218f、RetroMRE 19.0M/28f、Whisk3D 33.3M/9f、Spider-Man 9.5M/82f、Crazy Taxi 4→5。`verify_clean_room.sh` PASS。
+- clean-room 再検証：218f / 28f / 9f / 82f、メニュー遷移は正常。`verify_clean_room.sh` PASS。
 - v0.8.4.1 別名パス：SYSTEM tick/resolver/callback・`vm_sscanf`・sandbox容量、GRAPHICS 画面/画像/読込/mirror＋`create_layer_ex`、FILE dual取得・厳格open/append・`vm_resource_init`/`vm_res_load`。コーパス76/76 first-class。
-- v0.8.4.1 timed run：CatBoxMRE 30.8M/218f、RetroMRE 26.8M/39f、Whisk3D 33.3M/9f、Spider-Man 9.4M/83f、Crazy Taxi 4→OK(10 AVM1)→5。
+- v0.8.4.1 timed run：30.8M/218f、26.8M/39f、33.3M/9f、9.4M/83f、Flash Lite 4→OK(10 AVM1)→5。
 
 ## 8. 安全性
 

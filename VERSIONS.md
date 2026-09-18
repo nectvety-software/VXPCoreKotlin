@@ -7,7 +7,7 @@ ARM/Thumb trong `.vxp` là dữ liệu guest do interpreter Kotlin thực thi.
 ```
 VXP file
  -> AndroidVxpCore
- -> Kotlin backend (ARM/MRE hoặc Flash Lite)
+ -> Kotlin backend (ARM/runtime hoặc Flash Lite)
  -> FrameSnapshot RGB565
  -> controller của bạn
  -> EmulatorScreenCanvas / UI hiện có
@@ -18,24 +18,25 @@ VXP file
 | Thư mục | Version code | `dist` | Trạng thái |
 |---|---|---|---|
 | `VXP-Core-Library-v0.8/` | `0.8.0` (`VxpCoreLibrary.VERSION`, `AndroidVxpCore.VERSION`) | `dist/vxp-core-0.8.0.jar` | Thư viện lõi đầu tiên, bỏ app/demo UI |
-| `VXP-Core-Library-v0.8.2/` | `0.8.2` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + SMS sandbox + regression dài |
-| `VXP-Core-Library-v0.8.3/` | `0.8.3` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3.jar` | Tương thích ELF/GCC + 3 title ELF mới |
-| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebase Kotlin-only, bỏ catalog SDK, + docs provenance/compliance |
+| `VXP-Core-Library-v0.8.2/` | `0.8.2` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.2.jar` | Thumb ALU + messaging sandbox + regression dài |
+| `VXP-Core-Library-v0.8.3/` | `0.8.3` (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3.jar` | Tương thích ELF/GCC + 3 sample ELF mới |
+| `VXP-Core-Library-v0.8.3-cleanroom/` | `0.8.3` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.3-cleanroom.jar` | Rebase Kotlin-only, bỏ catalog suy từ SDK, + docs provenance/compliance |
 | `VXP-Core-Library-v0.8.4.1/` | `0.8.4.1` clean-room (đồng bộ core + Android facade) | `dist/vxp-core-0.8.4.1.jar` | Mới nhất: SYSTEM/GRAPHICS/FILE_RESOURCE alias pass, 76/76 observed first-class |
 
 > Ghi chú: `CHANGELOG v0.8.2` có nhắc patch `v0.8.1` (PNG, Thumb BLX immediate, App Manager, operator-code)
-> nhưng trong repo hiện chỉ lưu 2 gói `v0.8` và `v0.8.2`.
+> nhưng trong repo hiện chỉ lưu các gói `v0.8`, `v0.8.2`, `v0.8.3`, `v0.8.3-cleanroom`, `v0.8.4.1`.
 
 ## 2. Module chung
 
 | Module | Vai trò |
 |---|---|
-| `vxp-core` | Lõi Kotlin/JVM trung lập: ELF ARM + RAW_ARM_ZLIB/Gameloft, MRE runtime, heap, file, graphics RGB565, input/timer |
+| `vxp-core` | Lõi Kotlin/JVM trung lập: ELF ARM + RAW_ARM_ZLIB, compatibility runtime, heap, file, graphics RGB565, input/timer |
 | `vxp-core-android` | Host Android Kotlin-only: Flash Lite/SWF renderer bằng `android.graphics`, AVM1 menu/input, system font rasterizer, `FrameSnapshot -> Bitmap` |
-| `tests/jvm` (chỉ v0.8.2+) | `SpiderManLibraryTest`, `ThumbAluRegression`, `ThumbBlxRegression`, `PngDecoderRegression` (+ v0.8.3: `ArmClz/ArmDoubleword/ArmLongMultiply/ArmPcOperand/ThumbBlxRegister/ThumbHalfwordImmediate/ThumbPcSemantics`) |
-| `tests/android-graphics-jvm` (chỉ v0.8.2+) | `CrazyTaxiAndroidBackendTest` + `android.graphics` stubs để compile-test trên JVM |
+| `tests/jvm` (từ v0.8.2) | CPU/ALU, BLX, halfword, PC-semantics, PNG, graphics/file/resource regressions (mở rộng dần theo bản) |
+| `tests/android-graphics-jvm` (từ v0.8.2) | Flash Lite backend test + `android.graphics` stubs để compile-test trên JVM |
+| `tools/` (từ v0.8.4.1) | Script quét symbol quan sát trong binary do người dùng cung cấp |
 | `validation/` | Log chạy thật, sha256 frame, ảnh PNG |
-| `docs/` | `TEST_RESULTS.md`, `INTEGRATE_EXISTING_UI.md` |
+| `docs/` | `TEST_RESULTS.md`, `INTEGRATE_EXISTING_UI.md`, docs clean-room |
 
 Phụ thuộc duy nhất cho app:
 
@@ -45,14 +46,14 @@ implementation(project(":vxp-core-android")) // tự kéo theo :vxp-core
 
 ## 3. Backend hỗ trợ
 
-| Dạng VXP | Backend | v0.8.0 | v0.8.2 | v0.8.3 |
+| Dạng VXP | Backend | v0.8.0 | v0.8.2 | v0.8.3+ |
 |---|---|---|---|---|
-| `ELF32 ARM` | Kotlin ARM/Thumb + MRE | Có | Có | Có, +GCC bootstrap/init-array |
-| Gameloft raw ARM + zlib (`RAW_ARM_ZLIB`) | Kotlin ARM/Thumb + MRE | Có | Có | Có, giữ regression |
+| `ELF32 ARM` | Kotlin ARM/Thumb + compatibility runtime | Có | Có | Có, +GCC bootstrap/init-array |
+| Raw ARM + zlib (`RAW_ARM_ZLIB`) | Kotlin ARM/Thumb + compatibility runtime | Có | Có | Có, giữ regression |
 | Flash Lite `FWS/CWS` | Android Kotlin + SWF/AVM1 | Có, compatibility-first | Có, giữ nguyên + test JVM stubs | Có, giữ menu 4→5 |
-| Unknown/proprietary | Detector | Trả `UNKNOWN`, không fallback MREmu | Giữ nguyên | Giữ nguyên |
+| Unknown/proprietary | Detector | Trả `UNKNOWN`, không fallback emulator khác | Giữ nguyên | Giữ nguyên |
 
-## 4. Public API (giữ nguyên qua 2 bản)
+## 4. Public API (giữ nguyên qua các bản)
 
 ```kotlin
 val session = AndroidVxpCore.open(
@@ -72,134 +73,136 @@ session.stop(); session.close()
 ```
 
 Quy tắc UI: **không hiển thị `bootMessage` sau frame đầu tiên** — `onFrame()` là nguồn LCD duy nhất khi `Running`.
-Đường cũ đã bỏ: `MreNativeVxpApp -> NativeVxpBridge -> JNI -> vxp_runner.cpp`.
+Đường native-bridge cũ đã bỏ.
 
 ## 5. So sánh regression thực tế
 
-### 5.1 The Amazing Spider-Man - The Daily Bugle (`RAW_ARM_ZLIB`, binary user-supplied, không kèm ZIP)
+Các binary mẫu do người dùng cung cấp chỉ dùng để kiểm thử, không kèm trong gói.
+Dưới đây dùng nhãn chung: Sample A (`RAW_ARM_ZLIB`), Sample B (`FLASH_LITE`),
+Sample C/D/E (`ELF_ARM`).
+
+### 5.1 Sample A (`RAW_ARM_ZLIB`)
 
 | Chỉ số | v0.8.0 | v0.8.2 |
 |---|---|---|
-| Thời gian / quy mô test | 6s, `6.896.572` insn | `23.524.795` insn ( Core log ghi >24M / >700 frames trên demo dài) |
+| Thời gian / quy mô test | 6s, `6.896.572` insn | `23.524.795` insn (log ghi >24M / >700 frames trên demo dài) |
 | Frames / events / timer | `76 / 77 / -` | `425 / 440 / 424` |
 | Framebuffer | `240x320 RGB565`, sha `7613e735…` | `240x320 RGB565` |
 | CPU/memory fault | Không | Không |
 | `stubbedSymbols` | `[]` | `[]` |
 
-Fix liên quan Spider-Man:
+Fix liên quan Sample A:
 - v0.8.0: RAW ARM two-zlib loader, ARM/Thumb halfword/signed loads, ARM BLX immediate, Thumb LDMIA base-in-list, heap split/coalesce/realloc, resource/canvas/blt, text/file runtime, `vm_malloc(0)` không tính OOM, `vm_graphic_mirror` no-op, audio suspend/resume compat.
 - v0.8.1 (kế thừa trong v0.8.2): PNG image loading/property, Thumb BLX immediate `F001 E9A4`, App Manager installed-list count query, operator-code output.
 - v0.8.2: Thumb ALU `ADC/SBC/ROR/NEG/CMN`, đúng opcode `0x4241 = NEG r1,r0`, `strtoi` thành API thật.
 
-An toàn: binary có chuỗi `GL_Demo/SMS/UNLOCK`; `vm_send_sms` (v0.8.2) luôn trả failure, không gửi SMS/mạng thật.
+An toàn: guest messaging API (`vm_send_sms`, v0.8.2) luôn trả failure trong sandbox, không thực hiện tác vụ tính phí/gửi mạng thật.
 
-### 5.2 CrazyTaxi_1.0.vxp (`FLASH_LITE`)
+### 5.2 Sample B (`FLASH_LITE`)
 
 | Chỉ số | v0.8.0 | v0.8.2 |
 |---|---|---|
 | Stage | `176x220, 20 FPS, 35 frames` | Giữ nguyên |
 | Shapes/Sprites/Bitmaps/Buttons | `25 / 12 / JPEG3 5 / 7` | Giữ nguyên |
-| Menu | frame 4, `OK` -> AVM1 `ButtonCondAction` -> frame 5 | Giữ nguyên |
+| Menu | frame 4, `OK` -> AVM1 button action -> frame 5 | Giữ nguyên |
 | AVM1 actions / inputs / playing | `10 / 1 / true` | Giữ nguyên |
-| Kiểm chứng | sha menu `fbf54d2f…`, gameplay `417846c0…` | `validation/crazytaxi_v082.txt` |
+| Kiểm chứng | sha menu `fbf54d2f…`, gameplay `417846c0…` | log validation tương ứng |
 
-Flash backend v0.8.x: parser SWF + player + AVM1 menu/input, `ZWS/LZMA` báo chưa hỗ trợ, giữ rule timeline `v0.4 -> v0.5` cho scenery động.
+Flash backend v0.8.x: parser SWF + player + AVM1 menu/input, `ZWS/LZMA` báo chưa hỗ trợ, giữ rule timeline cho scenery động.
 
-### 5.3 v0.8.3 — 3 title ELF mới (binary user-supplied, không kèm ZIP)
+### 5.3 v0.8.3 — 3 sample ELF mới (không kèm ZIP)
 
-| VXP | Backend | Kết quả | Ghi chú |
+| Sample | Backend | Kết quả | Ghi chú |
 |---|---|---|---|
-| `CatBoxMRE.vxp` | `ELF_ARM` | PASS gameplay, 218 frames / 28.3M instr | input, timer, resource, file, graphics active |
-| `RetroMRE.vxp` | `ELF_ARM` | PASS menu `RETRO MRE / PIXEL LAUNCHER`, 18 frames / 11.8M instr | `vm_find_first/next/close` thật + UCS2 NUL fix, test `demo.gb` ở sandbox E: |
-| `Whisk3D.vxp` | `ELF_ARM` | PASS scene 3D, 9 frames / 33.3M instr | render cube/sphere/cone 240×320 |
+| Sample C | `ELF_ARM` | PASS gameplay, 218 frames / 28.3M instr | input, timer, resource, file, graphics active |
+| Sample D | `ELF_ARM` | PASS menu launcher, 18 frames / 11.8M instr | `vm_find_first/next/close` thật + UCS2 NUL fix, test file trong sandbox E: |
+| Sample E | `ELF_ARM` | PASS scene 3D, 9 frames / 33.3M instr | render cube/sphere/cone 240×320 |
 
-Fix lõi nhờ 3 title này: `R_ARM_RELATIVE` sym-index-0, bootstrap `gcc_entry` + `.init_array`,
+Fix lõi nhờ 3 sample này: `R_ARM_RELATIVE` sym-index-0, bootstrap `gcc_entry` + `.init_array`,
 Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` +
 `UMULL/UMLAL/SMULL/SMLAL` + Operand2 PC (+8), `_vm_log_info/_vm_log_error`,
-`vm_find_*` wildcard, UCS2→ASCII NUL. Xem
-`VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`.
+`vm_find_*` wildcard, UCS2→ASCII NUL.
 
 ### 5.4 v0.8.3-cleanroom — re-validation trên cây Kotlin-only rebase (không bundle binary)
 
 | Workload | Backend | Kết quả clean-room |
 |---|---|---|
-| `CatBoxMRE` | `ELF_ARM` | 30.163.160 instr / 218 frames, stable timed run |
-| `RetroMRE` | `ELF_ARM` | 18.960.170 instr / 28 frames, stable timed run |
-| `Whisk3D` | `ELF_ARM` | 33.296.269 instr / 9 frames, stable timed run |
-| Spider-Man | `RAW_ARM_ZLIB` | 9.480.936 instr / 82 frames, no unresolved symbols |
-| Crazy Taxi | `FLASH_LITE` | menu 4 → OK → frame 5 |
+| Sample C | `ELF_ARM` | 30.163.160 instr / 218 frames, stable timed run |
+| Sample D | `ELF_ARM` | 18.960.170 instr / 28 frames, stable timed run |
+| Sample E | `ELF_ARM` | 33.296.269 instr / 9 frames, stable timed run |
+| Sample A | `RAW_ARM_ZLIB` | 9.480.936 instr / 82 frames, no unresolved symbols |
+| Sample B | `FLASH_LITE` | menu 4 → OK → frame 5 |
 
 - `verify_clean_room.sh`: PASS; không còn file C/C++/JNI/NDK hay catalog sinh từ SDK trong gói.
 - Tài liệu mới: `NOTICE-CLEANROOM.txt`, `docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`,
-  `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`, `validation/CLEANROOM_VALIDATION_v0.8.3.md`,
-  thêm `build/GenericVxpProbe.kt` + `build/core_sources.txt`.
+  `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`, `validation/CLEANROOM_VALIDATION_v0.8.3.md`.
 
 ### 5.5 v0.8.4.1 — SYSTEM/GRAPHICS/FILE_RESOURCE alias pass (clean-room)
 
 - SYSTEM: `vm_get_tick`, `vm_get_sym_entry`, `vm_reg_key/system_event/touch_callback`,
-  `vm_get_removable_driver` spelling, `vm_sscanf` subset, disk free-space từ sandbox.
+  spelling alias cho removable-driver query, `vm_sscanf` subset, disk free-space từ sandbox.
 - GRAPHICS: `screen_w/h`, image buffer/property/load/release aliases,
-  `create_layer_ex` first-class, `vm_graphic_mirror` software path + safe no-op.
-- FILE_RESOURCE: dual `get_file_size`, open/append chặt, `vm_resource_init`/`vm_res_load` aliases.
+  `create_layer_ex` first-class, image mirror software path + safe no-op.
+- FILE_RESOURCE: dual `get_file_size`, open/append chặt, resource init/load aliases.
 - Corpus quan sát (`tools/observed_vxp_surface.py`): 76 unique `vm_*` / 76 first-class / 0 missing —
   chỉ là corpus coverage, không tuyên bố mọi VXP.
-- Timed runs: CatBoxMRE 30.787.098 instr / 218f, RetroMRE 26.838.009 / 39f,
-  Whisk3D 33.296.269 / 9f, Spider-Man 9.432.148 / 83f `stubbedSymbols=[]`,
-  CrazyTaxi menu 4 → OK (10 AVM1) → frame 5.
-- Thêm `SystemGraphicsFileResourceRegression.kt` + `docs/OBSERVED_COMPATIBILITY_SURFACE.md` (tổng 141 files).
+- Timed runs: 30.787.098 instr / 218f, 26.838.009 / 39f,
+  33.296.269 / 9f, 9.432.148 / 83f `stubbedSymbols=[]`,
+  Flash Lite menu 4 → OK (10 AVM1) → frame 5.
+- Thêm test graphics/file/resource + `docs/OBSERVED_COMPATIBILITY_SURFACE.md` (tổng 141 files).
 
 ## 6. Thay đổi chi tiết
 
 ### v0.8.4.1
-- SYSTEM/GRAPHICS/FILE_RESOURCE first-class aliases như mục 5.5; giữ clean-room (không SDK/JNI/NDK/C/C++).
-- Tool `tools/observed_vxp_surface.py` quét `vm_*` trong binary VXP + đối chiếu handler Kotlin.
-- Thêm test `SystemGraphicsFileResourceRegression` + validation PNG/log (`validation/vxp/*`, `vxp2/*`, `regression/*`).
-- Giữ toàn bộ regression v0.8.3 (CatBoxMRE/RetroMRE/Whisk3D/Spider-Man/Crazy Taxi).
+- SYSTEM/GRAPHICS/FILE_RESOURCE first-class aliases như mục 5.5; giữ clean-room (không JNI/NDK/C/C++).
+- Tool quét `vm_*` trong binary do người dùng cung cấp + đối chiếu handler Kotlin.
+- Thêm test graphics/file/resource + validation PNG/log (`validation/vxp/*`, `vxp2/*`, `regression/*`).
+- Giữ toàn bộ regression v0.8.3.
 
 ### v0.8.3-cleanroom
-- Rebase trên implementation Kotlin-only v0.8.3; xóa workflow catalog suy từ SDK proprietary và mọi wording SDK trong source/docs.
+- Rebase trên implementation Kotlin-only v0.8.3; xóa workflow catalog suy từ SDK và mọi wording SDK trong source/docs.
 - Thêm chính sách clean-room/provenance; handler tương thích chỉ giữ khi implement độc lập từ hành vi quan sát + regression tests.
-- Không JNI/NDK/C/C++/MREmu runtime; `vm_*` là compatibility identifiers do guest import, implement bằng Kotlin độc lập.
-- Commercial binaries không kèm trong gói; checklist phát hành thương mại (SAF import, sandbox, SMS/network opt-in, ads/Pro tách khỏi content).
+- Không JNI/NDK/C/C++ runtime; `vm_*` là compatibility identifiers do guest import, implement bằng Kotlin độc lập.
+- Binary mẫu không kèm trong gói; checklist phát hành (SAF import, sandbox, messaging/network opt-in, ads/Pro tách khỏi content).
 
 ### v0.8.3
-- ELF `R_ARM_RELATIVE` sym-index-0; GOT/init-array VXP GCC relocate đúng.
-- Bootstrap `gcc_entry` (`vm_get_sym_entry`) + chạy `.init_array` trước `vm_main`.
+- ELF `R_ARM_RELATIVE` sym-index-0; GOT/init-array relocate đúng.
+- Bootstrap `gcc_entry` + chạy `.init_array` trước `vm_main`.
 - Thumb `BLX register` (LR + interworking), PC high-register = current+4, thêm `STRH/LDRH` immediate.
-- ARM `CLZ`, `LDRD/STRD`, `UMULL/UMLAL/SMULL/SMLAL`; Operand2 đọc r15 = current+8 (fix veneer `ADD pc,r12,pc`).
+- ARM `CLZ`, `LDRD/STRD`, `UMULL/UMLAL/SMULL/SMLAL`; Operand2 đọc r15 = current+8.
 - `_vm_log_info/_vm_log_error` thành logging API; `vm_find_first/next/close` enumerate thật + wildcard; UCS2→ASCII giữ NUL.
-- Regression: CatBoxMRE gameplay, RetroMRE menu, Whisk3D 3D; giữ Spider-Man + Crazy Taxi.
-- Thêm 7 CPU regression tests + `validation/new_vxp/*`, `validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`, CSV + SHA256.
+- Regression: 3 sample ELF mới; giữ Sample A + Sample B.
+- Thêm 7 CPU regression tests + validation tương ứng, CSV + SHA256.
 
 ### v0.8.2
 - `ArmCpu`: đủ nhóm Thumb ALU register: `ADC, SBC, ROR, NEG, CMN`.
-- `MreRuntime`: `strtoi` API thật; `vm_send_sms` sandbox failure.
-- Đồng bộ `VERSION = "0.8.2"` core + Android.
-- Thêm `PngDecoder.kt`, tests JVM + validation PNG (`spiderman_v082_*.png`, `thumb_*_regression.txt`, `png_decoder_regression.txt`).
-- Giữ hành vi Crazy Taxi frame 4 -> 5.
+- `MreRuntime`: `strtoi` API thật; guest messaging API sandbox failure.
+- Đồng bộ version `0.8.2` core + Android facade.
+- Thêm `PngDecoder.kt`, tests JVM + validation PNG.
+- Giữ hành vi Flash Lite menu frame 4 -> 5.
 
 ### v0.8.0
 - Tách thành thư viện, xóa app/demo UI khỏi deliverable.
 - `vxp-core` JVM thuần cho ELF + RAW_ARM_ZLIB.
-- `vxp-core-android` Kotlin host, port Flash renderer từ AWT/Swing sang `android.graphics`.
-- Public `VxpCoreLibrary`, `VxpSession`, `AndroidVxpCore`, `AndroidVxpSession`; output duy nhất `FrameSnapshot RGB565`; Nokia key helpers.
-- Crazy Taxi: Shape/PlaceObject2/RemoveObject2/JPEG3/timeline/ButtonCondAction/AVM1 Start.
-- Spider-Man: regression 6s không fault.
+- `vxp-core-android` Kotlin host, port Flash renderer sang `android.graphics`.
+- Public `VxpCoreLibrary`, `VxpSession`, `AndroidVxpCore`, `AndroidVxpSession`; output duy nhất `FrameSnapshot RGB565`; legacy key helpers.
+- Flash Lite: Shape/PlaceObject2/RemoveObject2/JPEG3/timeline/button action/AVM1 Start.
+- Sample A: regression 6s không fault.
 
 ## 7. Cấu trúc file khác biệt
 
-- v0.8.0: `16` file `vxp-core/*.kt` (chưa có `PngDecoder.kt`), không có `tests/`, `validation/` có 4 txt.
-- v0.8.2: thêm `vxp-core/.../PngDecoder.kt`, thêm `tests/jvm/*` (4 file) + `tests/android-graphics-jvm/*` (2 file), `validation/` mở rộng (7 txt + 3 png).
-- v0.8.3: thêm 7 CPU regression tests (tổng 11 tests/jvm), `validation/new_vxp/*` + `validation/all_vxp/*`, `ALL_VXP_COMPATIBILITY_v0.8.3.md`, CSV + SHA256 (tổng 116 files).
-- v0.8.3-cleanroom: + `NOTICE-CLEANROOM.txt`, `verify_clean_room.sh`, `build/GenericVxpProbe.kt`, docs `CLEAN_ROOM_POLICY/PROVENANCE/COMMERCIAL_DISTRIBUTION_CHECKLIST`, `validation/CLEANROOM_VALIDATION_v0.8.3.md` + `validation/cleanroom_vxp/*` (tổng 90 files).
-- v0.8.4.1: + `docs/OBSERVED_COMPATIBILITY_SURFACE.md`, `tools/observed_vxp_surface.py`, test `SystemGraphicsFileResourceRegression`, validation `COMPATIBILITY_v0.8.4.1.md` + `observed_surface_v0.8.4.1.txt` + `validation/vxp/*`, `vxp2/*`, `regression/*` (tổng 141 files).
+- v0.8.0: `16` file `vxp-core/*.kt`, không có `tests/`, `validation/` có 4 txt.
+- v0.8.2: thêm `PngDecoder.kt`, thêm `tests/jvm/*` (4 file) + `tests/android-graphics-jvm/*` (2 file), `validation/` mở rộng (7 txt + 3 png).
+- v0.8.3: thêm 7 CPU regression tests (tổng 11 tests/jvm), validation mở rộng, ma trận tương thích, CSV + SHA256 (tổng 116 files).
+- v0.8.3-cleanroom: + `NOTICE-CLEANROOM.txt`, `verify_clean_room.sh`, probe nguồn, docs clean-room/provenance/checklist, validation clean-room (tổng 90 files).
+- v0.8.4.1: + `docs/OBSERVED_COMPATIBILITY_SURFACE.md`, tool quét symbol, test graphics/file/resource, validation tương thích + PNG/log (tổng 141 files).
 
 ## 8. Nên dùng bản nào?
 
 - Dùng `v0.8.4.1` cho mọi tích hợp mới và mọi bản phát hành/phân phối: superset clean-room của v0.8.3 + alias SYSTEM/GRAPHICS/FILE_RESOURCE, corpus 76/76.
 - `v0.8.3-cleanroom` giữ lại để đối chiếu trước alias pass; `v0.8.3` thường để đối chiếu trước rebase.
-- Chỉ tham khảo `v0.8.0` khi cần đối chiếu sha frame cũ (`7613e735…`, `fbf54d2f…`) hoặc hành vi trước Thumb-ALU fix.
-- `v0.8.2` giữ lại để đối chiếu regression Spider-Man dài 23.5M insn trước thay đổi CPU v0.8.3.
+- Chỉ tham khảo `v0.8.0` khi cần đối chiếu sha frame cũ hoặc hành vi trước Thumb-ALU fix.
+- `v0.8.2` giữ lại để đối chiếu regression dài 23.5M insn trước thay đổi CPU v0.8.3.
 
 ## 9. Nguồn đối chiếu
 
@@ -210,6 +213,4 @@ Thumb `BLX register` + PC semantics (+4) + `STRH/LDRH`, ARM `CLZ` + `LDRD/STRD` 
 - `VXP-Core-Library-v0.8.3-cleanroom/docs/CLEAN_ROOM_POLICY.md`, `docs/PROVENANCE.md`, `docs/COMMERCIAL_DISTRIBUTION_CHECKLIST.md`
 - `VXP-Core-Library-v0.8.4.1/README.md`, `CHANGELOG.md`, `docs/OBSERVED_COMPATIBILITY_SURFACE.md`
 - `VXP-Core-Library-v0.8.4.1/validation/COMPATIBILITY_v0.8.4.1.md`, `validation/observed_surface_v0.8.4.1.txt`
-- `VXP-Core-Library-v0.8.3/validation/ALL_VXP_COMPATIBILITY_v0.8.3.md`, `validation/new_vxp/COMPATIBILITY_v0.8.3.md`
 - `vxp-core/.../VxpLibrary.kt: VERSION`, `vxp-core-android/.../AndroidVxpCore.kt: VERSION`
-- `validation/spiderman_v08.txt`, `spiderman_v082.txt`, `crazytaxi_v08.txt`, `crazytaxi_v082.txt`

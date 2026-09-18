@@ -8,7 +8,7 @@
 
 ## 1. 概述
 
-纯 Kotlin 核心库，用于在现有 Android UI 中运行 MediaTek `.vxp`。
+纯 Kotlin 核心库，用于在现有 Android UI 中运行 `.vxp`。
 无 Activity/View/Compose，无 JNI/NDK/CMake/C/C++，无 `System.loadLibrary`。
 Guest ARM/Thumb 代码由 Kotlin 解释器执行。
 
@@ -32,9 +32,9 @@ VXP -> AndroidVxpCore -> Kotlin 后端（ARM/MRE 或 Flash Lite）
 ## 3. 后端支持
 
 - `ELF32 ARM` → Kotlin ARM/Thumb + MRE：支持，v0.8.3 新增 GCC `gcc_entry` + `.init_array` 启动。
-- Raw ARM + zlib（`RAW_ARM_ZLIB`，Gameloft）→ Kotlin ARM/Thumb + MRE：支持。
+- Raw ARM + zlib（`RAW_ARM_ZLIB`）→ Kotlin ARM/Thumb + MRE：支持。
 - Flash Lite `FWS/CWS` → Android Kotlin + SWF/AVM1：兼容优先。
-- 未知格式 → 检测器返回 `UNKNOWN`，不回退 MREmu。
+- 未知格式 → 检测器返回 `UNKNOWN`，不回退到其他模拟器。
 
 ## 4. 环境要求
 
@@ -80,13 +80,13 @@ session.stop(); session.close()
 
 ## 7. 验证
 
-- 蜘蛛侠（`RAW_ARM_ZLIB`）：23,524,795 指令 / 425 帧 / 440 事件 / 424 定时器，240x320 RGB565，无故障，`stubbedSymbols = []`。
-- Crazy Taxi（`FLASH_LITE`）：176x220 @20fps，35 帧，菜单第 4 帧 → OK → 真实 AVM1 跳到第 5 帧。
-- v0.8.3 新增 3 个 ELF：`CatBoxMRE` 游戏（218 帧 / 28.3M 指令）、`RetroMRE` 菜单（18 帧 / 11.8M 指令，真实 `vm_find_*` + UCS2 NUL 修复）、`Whisk3D` 3D 场景（9 帧 / 33.3M 指令）。
+- 样本 A（`RAW_ARM_ZLIB`）：23,524,795 指令 / 425 帧 / 440 事件 / 424 定时器，240x320 RGB565，无故障，`stubbedSymbols = []`。
+- 样本 B（`FLASH_LITE`）：176x220 @20fps，35 帧，菜单第 4 帧 → OK → 真实 AVM1 跳到第 5 帧。
+- v0.8.3 新增 3 个 ELF：游戏样本（218 帧 / 28.3M 指令）、菜单样本（18 帧 / 11.8M 指令，真实 `vm_find_*` + UCS2 NUL 修复）、3D 场景（9 帧 / 33.3M 指令）。
 - v0.8.3 CPU 修复：`R_ARM_RELATIVE` sym-0、`gcc_entry`/`.init_array`、Thumb BLX-reg + PC(+4) + STRH/LDRH、ARM CLZ + LDRD/STRD + 长乘法、Operand2 PC(+8)、`_vm_log_*`、`vm_find_*` 通配符。
-- clean-room 再验证：CatBoxMRE 30.1M/218f、RetroMRE 19.0M/28f、Whisk3D 33.3M/9f、Spider-Man 9.5M/82f、Crazy Taxi 4→5。`verify_clean_room.sh` 通过。
+- clean-room 再验证：218f / 28f / 9f / 82f，菜单流程正常。`verify_clean_room.sh` 通过。
 - v0.8.4.1 别名：SYSTEM tick/resolver/callback、`vm_sscanf`、沙箱磁盘；GRAPHICS 屏幕/图像/加载/镜像 + `create_layer_ex`；FILE 双 get-size、严格 open/append、`vm_resource_init`/`vm_res_load`。语料 76/76 first-class。
-- v0.8.4.1 定时运行：CatBoxMRE 30.8M/218f、RetroMRE 26.8M/39f、Whisk3D 33.3M/9f、Spider-Man 9.4M/83f、Crazy Taxi 4→OK(10 AVM1)→5。
+- v0.8.4.1 定时运行：30.8M/218f、26.8M/39f、33.3M/9f、9.4M/83f，Flash Lite 4→OK(10 AVM1)→5。
 
 ## 8. 安全
 

@@ -8,7 +8,7 @@ vui lòng ghi công kèm link https://qeafivels.com/.
 
 ## 1. Tổng quan
 
-Lõi Kotlin-only chạy gói MediaTek `.vxp` trong UI Android có sẵn.
+Lõi Kotlin-only chạy gói `.vxp` trong UI Android có sẵn.
 Không Activity/View/Compose, không JNI/NDK/CMake/C/C++, không
 `System.loadLibrary`. Mã guest ARM/Thumb do interpreter Kotlin thực thi.
 
@@ -32,9 +32,9 @@ Tích hợp mới và mọi bản phân phối dùng **v0.8.4.1**. Xem `VERSIONS
 ## 3. Backend
 
 - `ELF32 ARM` → ARM/Thumb Kotlin + MRE: có, v0.8.3 thêm bootstrap GCC `gcc_entry` + `.init_array`.
-- Raw ARM + zlib (`RAW_ARM_ZLIB`, Gameloft) → ARM/Thumb Kotlin + MRE: có.
+- Raw ARM + zlib (`RAW_ARM_ZLIB`) → ARM/Thumb Kotlin + MRE: có.
 - Flash Lite `FWS/CWS` → Kotlin Android + SWF/AVM1: mức compatibility-first.
-- Lạ → detector trả `UNKNOWN`, không fallback MREmu.
+- Lạ → detector trả `UNKNOWN`, không fallback emulator khác.
 
 ## 4. Yêu cầu
 
@@ -81,13 +81,13 @@ là nguồn LCD duy nhất.
 
 ## 7. Kiểm chứng
 
-- Spider-Man (`RAW_ARM_ZLIB`): 23.524.795 insn / 425 frames / 440 events / 424 timers, 240x320 RGB565, không fault, `stubbedSymbols = []`.
-- Crazy Taxi (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 bằng AVM1 thật.
-- v0.8.3 thêm 3 title ELF: `CatBoxMRE` gameplay (218 frames / 28.3M instr), `RetroMRE` menu (18 frames / 11.8M instr, `vm_find_*` thật + fix UCS2 NUL), `Whisk3D` scene 3D (9 frames / 33.3M instr).
+- Sample A (`RAW_ARM_ZLIB`): 23.524.795 insn / 425 frames / 440 events / 424 timers, 240x320 RGB565, không fault, `stubbedSymbols = []`.
+- Sample B (`FLASH_LITE`): 176x220 @20fps, 35 frames, menu frame 4 → OK → frame 5 bằng AVM1 thật.
+- v0.8.3 thêm 3 sample ELF: gameplay (218 frames / 28.3M instr), menu launcher (18 frames / 11.8M instr, `vm_find_*` thật + fix UCS2 NUL), scene 3D (9 frames / 33.3M instr).
 - Fix CPU v0.8.3: `R_ARM_RELATIVE` sym-0, `gcc_entry`/`.init_array`, Thumb BLX-reg + PC(+4) + STRH/LDRH, ARM CLZ + LDRD/STRD + nhân dài, Operand2 PC(+8), `_vm_log_*`, `vm_find_*` wildcard.
-- Re-validation clean-room: CatBoxMRE 30.1M/218f, RetroMRE 19.0M/28f, Whisk3D 33.3M/9f, Spider-Man 9.5M/82f, Crazy Taxi 4→5. `verify_clean_room.sh` PASS.
+- Re-validation clean-room: 218f / 28f / 9f / 82f trên các sample, menu giữ nguyên. `verify_clean_room.sh` PASS.
 - v0.8.4.1 alias pass: SYSTEM tick/resolver/callback, `vm_sscanf`, disk sandbox; GRAPHICS screen/image/load/mirror + `create_layer_ex`; FILE dual get-size, open/append chặt, `vm_resource_init`/`vm_res_load`. Corpus 76/76 first-class.
-- v0.8.4.1 timed runs: CatBoxMRE 30.8M/218f, RetroMRE 26.8M/39f, Whisk3D 33.3M/9f, Spider-Man 9.4M/83f `stubbedSymbols=[]`, Crazy Taxi 4→OK(10 AVM1)→5.
+- v0.8.4.1 timed runs: 30.8M/218f, 26.8M/39f, 33.3M/9f, 9.4M/83f `stubbedSymbols=[]`, Flash Lite 4→OK(10 AVM1)→5.
 
 ## 8. An toàn
 
