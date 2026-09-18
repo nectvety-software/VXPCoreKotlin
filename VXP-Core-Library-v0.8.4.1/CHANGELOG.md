@@ -24,9 +24,17 @@
 ### FILE_RESOURCE
 
 - Thêm `vm_file_get_file_size` dual compatibility: handle hoặc UCS2 path.
-- Cải thiện open semantics: read-only không tạo directory; append seek tới EOF.
+- Cải thiện open semantics: quyền read/write tách theo mode, read-only không tạo directory, directory/path traversal bị từ chối.
+- `read/write` từ chối length âm, kiểm tra guest buffer + output pointer trước I/O và giới hạn mỗi request ở 32 MiB.
+- Partial read/EOF trả số byte chính xác; zero-byte read vẫn phải dùng handle hợp lệ.
+- `seek` không còn clamp vị trí âm về 0; negative/overflow seek trả failure và không đổi file pointer.
+- Append giờ được enforce ở mỗi lần write, kể cả sau khi guest đã seek sang vị trí khác.
 - Thêm first-class `vm_resource_init` và `vm_res_load` cho các tên alias đã quan sát trong ELF VXP.
-- Giữ và regression lại file read/write/seek/attributes/find-first/next/close và resource blob mapping.
+- `vm_load_resource`/`vm_res_load` dùng chung lookup + bounds validation; thêm UCS2-name compatibility fallback có kiểm soát.
+- `vm_resource_get_data` kiểm tra range chặt và hỗ trợ zero-byte probe.
+- Sửa parser ELF `.vm_res`: break đúng khi directory kết thúc/lỗi, loại duplicate entry, giữ offset mapping ổn định.
+- Resource blob nhỏ hơn sẽ xóa tail cũ trong guest mapping để tránh stale resource bytes.
+- Mở rộng regression cho partial read, EOF, append-after-seek, invalid length/pointer, sandbox traversal, raw-resource bounds, UCS2 resource name và ELF `.vm_res` loading.
 
 ### Clean-room diagnostics
 

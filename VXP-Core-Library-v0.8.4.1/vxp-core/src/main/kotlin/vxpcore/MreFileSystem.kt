@@ -15,6 +15,9 @@ class MreFileSystem(private val root: File) : AutoCloseable {
         const val MODE_CREATE_ALWAYS = 4
         const val MODE_APPEND = 8
 
+        /** Hard ceiling for one guest I/O request. Keeps malformed guests from allocating host-sized buffers. */
+        const val MAX_IO_SIZE = 32 * 1024 * 1024
+
         const val ATTR_READ_ONLY = 0x01
         const val ATTR_HIDDEN = 0x02
         const val ATTR_SYSTEM = 0x04
@@ -23,7 +26,14 @@ class MreFileSystem(private val root: File) : AutoCloseable {
         const val ATTR_ARCHIVE = 0x20
     }
 
-    private data class OpenFile(val file: RandomAccessFile, val path: File, val mode: Int)
+    private data class OpenFile(
+        val file: RandomAccessFile,
+        val path: File,
+        val mode: Int,
+        val readable: Boolean,
+        val writable: Boolean,
+        val append: Boolean
+    )
     private data class FindState(val names: List<String>, var index: Int = 0)
 
     private val handles = linkedMapOf<Int, OpenFile>()
@@ -61,14 +71,18 @@ class MreFileSystem(private val root: File) : AutoCloseable {
     fun open(path: String, mode: Int): Int {
         val target = resolveMrePath(path) ?: return -1
         return try {
+            val readable = (mode and MODE_READ) != 0
             val writable = (mode and (MODE_WRITE or MODE_CREATE_ALWAYS or MODE_APPEND)) != 0
+            val append = (mode and MODE_APPEND) != 0
+            if (!readable && !writable) return -1
             if (!writable && !target.isFile) return -1
+            if (target.exists() && !target.isFile) return -1
             if (writable) target.parentFile?.mkdirs()
             val raf = RandomAccessFile(target, if (writable) "rw" else "r")
             if ((mode and MODE_CREATE_ALWAYS) != 0) raf.setLength(0)
-            if ((mode and MODE_APPEND) != 0) raf.seek(raf.length())
+            if (append) raf.seek(raf.length())
             val h = allocHandle()
-            handles[h] = OpenFile(raf, target, mode)
+            handles[h] = OpenFile(raf, target, mode, readable, writable, append)
             h
         } catch (_: Throwable) {
             -1
@@ -109,7 +123,7 @@ class MreFileSystem(private val root: File) : AutoCloseable {
 
     fun read(handle: Int, length: Int): ByteArray? {
         val o = handles[handle] ?: return null
-        if (length < 0) return null
+        if (!o.readable || length < 0 || length > MAX_IO_SIZE) return null
         return try {
             val out = ByteArray(length)
             val n = o.file.read(out)
@@ -119,7 +133,14 @@ class MreFileSystem(private val root: File) : AutoCloseable {
 
     fun write(handle: Int, bytes: ByteArray): Int {
         val o = handles[handle] ?: return -1
-        return try { o.file.write(bytes); bytes.size } catch (_: Throwable) { -1 }
+        if (!o.writable || bytes.size > MAX_IO_SIZE) return -1
+        return try {
+            // Append is a write property, not merely the initial cursor position. A guest may
+            // seek after opening; writes must still land at EOF when append mode is active.
+            if (o.append) o.file.seek(o.file.length())
+            o.file.write(bytes)
+            bytes.size
+        } catch (_: Throwable) { -1 }
     }
 
     fun seek(handle: Int, offset: Long, origin: Int): Long? {
@@ -131,9 +152,12 @@ class MreFileSystem(private val root: File) : AutoCloseable {
                 2 -> o.file.length()
                 else -> return null
             }
-            val pos = (base + offset).coerceAtLeast(0L)
+            val pos = Math.addExact(base, offset)
+            if (pos < 0L) return null
             o.file.seek(pos)
             pos
+        } catch (_: ArithmeticException) {
+            null
         } catch (_: Throwable) { null }
     }
 

@@ -33,6 +33,10 @@ Some GCC/C++ ELF workloads still resolve generic toolchain finalization/unwind n
 
 - SYSTEM callback aliases, tick and resolver.
 - GRAPHICS image-buffer aliases and software mirror.
-- FILE read/write/path-size via sandbox.
-- RESOURCE init/load aliases and mapped bytes.
+- FILE open/read/write/seek/path-size via sandbox, including partial read, EOF,
+  invalid signed length/pointers, append-after-seek and traversal rejection.
+- RESOURCE init/load aliases, ASCII/UCS2 name compatibility, raw bounds checks,
+  ELF `.vm_res` offset mapping and stale-tail clearing.
 - `vm_sscanf` basic conversion.
+
+See `FILE_RESOURCE_v0.8.4.1.md` for the focused post-patch smoke run and detailed invariants.

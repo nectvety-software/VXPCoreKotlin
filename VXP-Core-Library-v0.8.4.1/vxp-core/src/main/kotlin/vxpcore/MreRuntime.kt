@@ -47,6 +47,7 @@ class MreRuntime(
     var rawResourceBlob: ByteArray = ByteArray(0)
         private set
     private var resourceMappedSize = 0
+    private var resourceBlobSize = 0
     private var namedResources: List<NamedResource> = emptyList()
     var rawExecutableName: String = "app.vxp"
 
@@ -517,12 +518,15 @@ class MreRuntime(
             }
         }
         api("vm_file_read") { cpu ->
-            val handle = arg(cpu, 0); val dst = arg(cpu, 1); val requested = arg(cpu, 2).coerceAtLeast(0); val out = arg(cpu, 3)
-            val bytes = if (requested == 0) ByteArray(0) else fileSystem.read(handle, requested)
-            val ok = bytes != null && (bytes.isEmpty() || memory.isMapped(dst, bytes.size))
+            val handle = arg(cpu, 0); val dst = arg(cpu, 1); val requested = arg(cpu, 2); val out = arg(cpu, 3)
+            val argsValid = requested in 0..MreFileSystem.MAX_IO_SIZE &&
+                (requested == 0 || (dst != 0 && memory.isMapped(dst, requested))) &&
+                (out == 0 || memory.isMapped(out, 4))
+            val bytes = if (!argsValid) null else fileSystem.read(handle, requested)
+            val ok = bytes != null
             if (ok) {
                 if (bytes!!.isNotEmpty()) memory.writeBytes(dst, bytes)
-                if (out != 0 && memory.isMapped(out, 4)) memory.write32(out, bytes.size)
+                if (out != 0) memory.write32(out, bytes.size)
                 cpu.r[0] = 0
             } else {
                 if (out != 0 && memory.isMapped(out, 4)) memory.write32(out, 0)
@@ -531,9 +535,13 @@ class MreRuntime(
             if (cpu.trace) println("[FILE] read h=$handle req=$requested got=${bytes?.size ?: -1}")
         }
         api("vm_file_write") { cpu ->
-            val handle = arg(cpu, 0); val src = arg(cpu, 1); val requested = arg(cpu, 2).coerceAtLeast(0); val out = arg(cpu, 3)
-            val valid = requested == 0 || memory.isMapped(src, requested)
-            val written = if (valid) fileSystem.write(handle, if (requested == 0) ByteArray(0) else memory.readBytes(src, requested)) else -1
+            val handle = arg(cpu, 0); val src = arg(cpu, 1); val requested = arg(cpu, 2); val out = arg(cpu, 3)
+            val valid = requested in 0..MreFileSystem.MAX_IO_SIZE &&
+                (requested == 0 || (src != 0 && memory.isMapped(src, requested))) &&
+                (out == 0 || memory.isMapped(out, 4))
+            val written = if (valid) {
+                fileSystem.write(handle, if (requested == 0) ByteArray(0) else memory.readBytes(src, requested))
+            } else -1
             if (out != 0 && memory.isMapped(out, 4)) memory.write32(out, written.coerceAtLeast(0))
             cpu.r[0] = if (written >= 0) 0 else -1
             if (cpu.trace) println("[FILE] write h=$handle req=$requested wrote=$written")
@@ -611,41 +619,21 @@ class MreRuntime(
             cpu.r[0] = 0
         }
         api("vm_load_resource") { cpu ->
-            val namePtr = arg(cpu, 0)
-            val sizeOut = arg(cpu, 1)
-            val name = runCatching { memory.readCString(namePtr, 256) }.getOrDefault("")
-            val entry = namedResources.firstOrNull { it.name == name }
-            if (entry == null) {
-                if (sizeOut != 0 && memory.isMapped(sizeOut, 4)) memory.write32(sizeOut, 0)
-                cpu.r[0] = 0
-            } else {
-                if (sizeOut != 0 && memory.isMapped(sizeOut, 4)) memory.write32(sizeOut, entry.size)
-                cpu.r[0] = RESOURCE_BASE + entry.offset
-            }
-            if (cpu.trace) println("[RES ] load '$name' -> 0x${cpu.r[0].toUInt().toString(16)} size=${entry?.size ?: 0}")
+            cpu.r[0] = loadNamedResource(arg(cpu, 0), arg(cpu, 1), cpu.trace)
         }
         api("vm_res_load") { cpu ->
-            val namePtr = arg(cpu, 0)
-            val sizeOut = arg(cpu, 1)
-            val name = runCatching { memory.readCString(namePtr, 256) }.getOrDefault("")
-            val entry = namedResources.firstOrNull { it.name == name }
-            if (entry == null) {
-                if (sizeOut != 0 && memory.isMapped(sizeOut, 4)) memory.write32(sizeOut, 0)
-                cpu.r[0] = 0
-            } else {
-                if (sizeOut != 0 && memory.isMapped(sizeOut, 4)) memory.write32(sizeOut, entry.size)
-                cpu.r[0] = RESOURCE_BASE + entry.offset
-            }
+            cpu.r[0] = loadNamedResource(arg(cpu, 0), arg(cpu, 1), cpu.trace)
         }
         api("vm_resource_get_data") { cpu ->
             val dst = arg(cpu, 0)
             val offset = arg(cpu, 1)
             val size = arg(cpu, 2)
-            val valid = dst != 0 && offset >= 0 && size >= 0 &&
-                offset.toLong() + size.toLong() <= rawResourceBlob.size.toLong() &&
-                memory.isMapped(dst, size)
+            val validRange = offset >= 0 && size >= 0 &&
+                offset.toLong() + size.toLong() <= rawResourceBlob.size.toLong()
+            val validDst = size == 0 || (dst != 0 && memory.isMapped(dst, size))
+            val valid = validRange && validDst
             if (valid) {
-                memory.writeBytes(dst, rawResourceBlob, offset, size)
+                if (size > 0) memory.writeBytes(dst, rawResourceBlob, offset, size)
                 cpu.r[0] = size
             } else {
                 cpu.r[0] = -1
@@ -873,6 +861,39 @@ class MreRuntime(
     }
 
     /**
+     * Resource names are normally narrow C strings. A few compiler wrappers can hand the
+     * runtime a UCS2 buffer, so accept that representation only when the first two printable
+     * characters clearly show the 8-bit/zero-byte pattern. This keeps ordinary ASCII names
+     * exact and does not perform locale/case folding.
+     */
+    private fun readResourceNameCompat(address: Int): String {
+        if (address == 0 || !memory.isMapped(address, 1)) return ""
+        val looksUcs2 = memory.isMapped(address, 4) &&
+            memory.read8(address) in 0x20..0x7e && memory.read8(address + 1) == 0 &&
+            memory.read8(address + 2) in 0x20..0x7e && memory.read8(address + 3) == 0
+        return if (looksUcs2) readUcs2Compat(address, 256)
+        else runCatching { memory.readCString(address, 256) }.getOrDefault("")
+    }
+
+    private fun loadNamedResource(namePtr: Int, sizeOut: Int, trace: Boolean): Int {
+        if (sizeOut != 0 && !memory.isMapped(sizeOut, 4)) return 0
+        val name = readResourceNameCompat(namePtr)
+        val entry = namedResources.firstOrNull {
+            it.name == name && it.offset >= 0 && it.size >= 0 &&
+                it.offset.toLong() + it.size.toLong() <= rawResourceBlob.size.toLong()
+        }
+        if (entry == null) {
+            if (sizeOut != 0) memory.write32(sizeOut, 0)
+            if (trace) println("[RES ] load '$name' -> missing")
+            return 0
+        }
+        if (sizeOut != 0) memory.write32(sizeOut, entry.size)
+        val result = RESOURCE_BASE + entry.offset
+        if (trace) println("[RES ] load '$name' -> 0x${result.toUInt().toString(16)} size=${entry.size}")
+        return result
+    }
+
+    /**
      * Install the GCC/MRE `.vm_res` archive embedded in an ELF. Its directory is
      * a sequence of: C-string name, absolute ELF file offset, byte size. Data
      * begins later in the same section. We convert absolute file offsets to
@@ -884,22 +905,22 @@ class MreRuntime(
         val entries = mutableListOf<NamedResource>()
         var pos = 0
         var firstData = sectionBlob.size
-        repeat(512) {
-            if (pos >= firstData || pos >= sectionBlob.size) return@repeat
+        var count = 0
+        while (count++ < 512 && pos < firstData && pos < sectionBlob.size) {
             var end = pos
             while (end < sectionBlob.size && end - pos < 512 && sectionBlob[end].toInt() != 0) end++
-            if (end >= sectionBlob.size || end == pos || sectionBlob[end].toInt() != 0) return@repeat
+            if (end >= sectionBlob.size || end == pos || sectionBlob[end].toInt() != 0) break
             val nameBytes = sectionBlob.copyOfRange(pos, end)
-            if (nameBytes.any { (it.toInt() and 0xff) !in 0x20..0x7e }) return@repeat
+            if (nameBytes.any { (it.toInt() and 0xff) !in 0x20..0x7e }) break
             val name = nameBytes.toString(Charsets.UTF_8)
             pos = end + 1
-            if (pos + 8 > sectionBlob.size) return@repeat
+            if (pos + 8 > sectionBlob.size) break
             val absoluteOffset = readLe32(sectionBlob, pos); pos += 4
             val size = readLe32(sectionBlob, pos); pos += 4
             val relative = absoluteOffset - sectionFileOffset
-            if (relative < 0 || size < 0 || relative.toLong() + size.toLong() > sectionBlob.size.toLong()) return@repeat
+            if (relative < 0 || size < 0 || relative.toLong() + size.toLong() > sectionBlob.size.toLong()) break
             firstData = minOf(firstData, relative)
-            entries += NamedResource(name, relative, size)
+            if (entries.none { it.name == name }) entries += NamedResource(name, relative, size)
         }
         rawResourceBlob = sectionBlob.copyOf()
         namedResources = entries
@@ -909,7 +930,13 @@ class MreRuntime(
     fun installRawResources(blob: ByteArray) {
         rawResourceBlob = blob.copyOf()
         namedResources = parseNamedResources(rawResourceBlob)
-        if (blob.isEmpty()) return
+        if (blob.isEmpty()) {
+            if (resourceBlobSize > 0) {
+                memory.writeBytes(RESOURCE_BASE, ByteArray(resourceBlobSize), force = true)
+                resourceBlobSize = 0
+            }
+            return
+        }
         mapResourceBlob(blob)
     }
 
@@ -921,7 +948,11 @@ class MreRuntime(
         } else {
             require(blob.size <= resourceMappedSize) { "Replacement resource blob exceeds mapped arena" }
         }
+        if (resourceBlobSize > blob.size) {
+            memory.writeBytes(RESOURCE_BASE + blob.size, ByteArray(resourceBlobSize - blob.size), force = true)
+        }
         memory.writeBytes(RESOURCE_BASE, blob, force = true)
+        resourceBlobSize = blob.size
     }
 
     fun rawNamedResources(): List<NamedResource> = namedResources.toList()
@@ -940,14 +971,16 @@ class MreRuntime(
             }
             if (end >= blob.size || blob[end].toInt() != 0) return out
             if (end == pos) return out // sentinel
-            val name = blob.copyOfRange(pos, end).toString(Charsets.US_ASCII)
+            val nameBytes = blob.copyOfRange(pos, end)
+            if (nameBytes.any { (it.toInt() and 0xff) !in 0x20..0x7e }) return out
+            val name = nameBytes.toString(Charsets.US_ASCII)
             pos = end + 1
             if (pos + 8 > blob.size) return out
             val offset = readLe32(blob, pos); pos += 4
             val size = readLe32(blob, pos); pos += 4
             if (offset < 0 || size < 0 || offset.toLong() + size.toLong() > blob.size.toLong()) return out
             firstDataOffset = minOf(firstDataOffset, offset)
-            out += NamedResource(name, offset, size)
+            if (out.none { it.name == name }) out += NamedResource(name, offset, size)
         }
         return out
     }

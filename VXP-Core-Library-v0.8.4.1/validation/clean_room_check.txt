@@ -1,1 +1,2 @@
+/mnt/data/vxp0841_work/VXP-Core-Library-v0.8.4.1/validation/FILE_RESOURCE_v0.8.4.1.md:3:This pass keeps the clean-room Kotlin runtime and concentrates on guest file/resource behavior. No proprietary MRE SDK headers, libraries or generated SDK catalog are required.
 OK: clean-room Kotlin-only source checks passed.

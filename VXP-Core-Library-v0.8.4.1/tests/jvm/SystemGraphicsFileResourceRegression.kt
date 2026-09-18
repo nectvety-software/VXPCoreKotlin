@@ -71,7 +71,7 @@ fun main() {
     require(layer > 0)
     require(call(memory, rt, cpu, "vm_graphic_get_font_height") > 0)
 
-    // FILE: sandbox create/write/size/copy/truncate/read.
+    // FILE: sandbox create/write/size/read/seek/append + argument validation.
     val pathA = SCRATCH + 0x1000
     val pathB = SCRATCH + 0x1200
     val sizeOut = SCRATCH + 0x1400
@@ -91,10 +91,66 @@ fun main() {
     val fhRead = call(memory, rt, cpu, "vm_file_open", pathA, MreFileSystem.MODE_READ)
     require(fhRead >= 3)
     val readBuf = SCRATCH + 0x1700
-    require(call(memory, rt, cpu, "vm_file_read", fhRead, readBuf, 5, sizeOut) == 0)
+    // Partial read reports actual bytes; a subsequent EOF read succeeds with zero bytes.
+    require(call(memory, rt, cpu, "vm_file_read", fhRead, readBuf, 8, sizeOut) == 0)
     require(memory.read32(sizeOut) == 5)
     require(memory.readBytes(readBuf, 5).contentEquals(byteArrayOf(1,2,3,4,5)))
+    require(call(memory, rt, cpu, "vm_file_read", fhRead, readBuf, 4, sizeOut) == 0)
+    require(memory.read32(sizeOut) == 0)
+
+    // Seek from start/end and reject positions before byte zero without moving the cursor.
+    require(call(memory, rt, cpu, "vm_file_seek", fhRead, 2, 0) == 0)
+    require(call(memory, rt, cpu, "vm_file_read", fhRead, readBuf, 2, sizeOut) == 0)
+    require(memory.readBytes(readBuf, 2).contentEquals(byteArrayOf(3,4)))
+    require(call(memory, rt, cpu, "vm_file_seek", fhRead, -1, 2) == 0)
+    require(call(memory, rt, cpu, "vm_file_read", fhRead, readBuf, 1, sizeOut) == 0)
+    require(memory.read8(readBuf) == 5)
+    require(call(memory, rt, cpu, "vm_file_seek", fhRead, 2, 0) == 0)
+    require(call(memory, rt, cpu, "vm_file_seek", fhRead, -99, 1) == -1)
+    require(call(memory, rt, cpu, "vm_file_read", fhRead, readBuf, 1, sizeOut) == 0)
+    require(memory.read8(readBuf) == 3)
+
+    // Negative lengths are errors rather than silently becoming zero-length I/O.
+    require(call(memory, rt, cpu, "vm_file_read", fhRead, readBuf, -1, sizeOut) == -1)
+    require(memory.read32(sizeOut) == 0)
+    // A read-only handle must reject writes.
+    memory.write8(data, 0x7F)
+    require(call(memory, rt, cpu, "vm_file_write", fhRead, data, 1, sizeOut) == -1)
+    require(memory.read32(sizeOut) == 0)
     require(call(memory, rt, cpu, "vm_file_close", fhRead) == 0)
+
+    // Invalid zero-byte handle still fails; zero length does not bypass handle validation.
+    require(call(memory, rt, cpu, "vm_file_read", 0x7FFF, 0, 0, sizeOut) == -1)
+
+    // Append is enforced on every write, even if the guest seeks back to the beginning.
+    val fhAppend = call(memory, rt, cpu, "vm_file_open", pathA, MreFileSystem.MODE_WRITE or MreFileSystem.MODE_APPEND)
+    require(fhAppend >= 3)
+    require(call(memory, rt, cpu, "vm_file_seek", fhAppend, 0, 0) == 0)
+    memory.write8(data, 9)
+    require(call(memory, rt, cpu, "vm_file_write", fhAppend, data, 1, sizeOut) == 0)
+    require(memory.read32(sizeOut) == 1)
+    require(call(memory, rt, cpu, "vm_file_write", fhAppend, data, -1, sizeOut) == -1)
+    require(memory.read32(sizeOut) == 0)
+    // Bad bytes-written pointer must fail before touching the file.
+    require(call(memory, rt, cpu, "vm_file_write", fhAppend, data, 1, 0x1234) == -1)
+    require(call(memory, rt, cpu, "vm_file_close", fhAppend) == 0)
+    require(call(memory, rt, cpu, "vm_file_get_file_size", pathA, sizeOut) == 0)
+    require(memory.read32(sizeOut) == 6)
+
+    val fhVerify = call(memory, rt, cpu, "vm_file_open", pathA, MreFileSystem.MODE_READ)
+    require(fhVerify >= 3)
+    require(call(memory, rt, cpu, "vm_file_read", fhVerify, readBuf, 6, sizeOut) == 0)
+    require(memory.readBytes(readBuf, 6).contentEquals(byteArrayOf(1,2,3,4,5,9)))
+    require(call(memory, rt, cpu, "vm_file_close", fhVerify) == 0)
+
+    // Read-only open does not create missing parent paths, and traversal is rejected.
+    val missingPath = SCRATCH + 0x1A00
+    val traversalPath = SCRATCH + 0x1C00
+    putUcs2(memory, missingPath, "C:\\missing\\no.bin")
+    putUcs2(memory, traversalPath, "C:\\..\\escape.bin")
+    require(call(memory, rt, cpu, "vm_file_open", missingPath, MreFileSystem.MODE_READ) == -1)
+    require(!File(root, "C/missing").exists())
+    require(call(memory, rt, cpu, "vm_file_open", traversalPath, MreFileSystem.MODE_WRITE or MreFileSystem.MODE_CREATE_ALWAYS) == -1)
 
     // RESOURCE: clean-room named resource blob + init/load aliases.
     val name = "asset"
@@ -113,6 +169,56 @@ fun main() {
     val resPtr = call(memory, rt, cpu, "vm_res_load", resName, sizeOut)
     require(resPtr != 0 && memory.read32(sizeOut) == 3)
     require(memory.read8(resPtr) == 0x11 && memory.read8(resPtr+2) == 0x33)
+
+    // Both resource aliases share identical loading behavior.
+    require(call(memory, rt, cpu, "vm_load_resource", resName, sizeOut) == resPtr)
+    require(memory.read32(sizeOut) == 3)
+
+    // Compatibility fallback for wrappers that hand over an obvious UCS2 resource name.
+    val resNameUcs2 = SCRATCH + 0x2040
+    putUcs2(memory, resNameUcs2, name)
+    require(call(memory, rt, cpu, "vm_res_load", resNameUcs2, sizeOut) == resPtr)
+    require(memory.read32(sizeOut) == 3)
+
+    // Missing resource zeroes size; invalid size pointer is rejected without a guest pointer.
+    putAscii(memory, resName, "missing")
+    memory.write32(sizeOut, 0x77777777)
+    require(call(memory, rt, cpu, "vm_res_load", resName, sizeOut) == 0)
+    require(memory.read32(sizeOut) == 0)
+    putAscii(memory, resName, name)
+    require(call(memory, rt, cpu, "vm_res_load", resName, 0x1234) == 0)
+
+    // Raw resource copy enforces [offset, offset+size) bounds and supports zero-byte probes.
+    val resCopy = SCRATCH + 0x2100
+    require(call(memory, rt, cpu, "vm_resource_get_data", resCopy, headerSize, 3) == 3)
+    require(memory.readBytes(resCopy, 3).contentEquals(byteArrayOf(0x11,0x22,0x33)))
+    require(call(memory, rt, cpu, "vm_resource_get_data", resCopy, blob.size - 1, 2) == -1)
+    require(call(memory, rt, cpu, "vm_resource_get_data", 0, blob.size, 0) == 0)
+
+    // ELF .vm_res parser regression: absolute file offsets become stable RESOURCE_BASE pointers.
+    val elfName = "elfasset"
+    val elfHeader = elfName.length + 1 + 8
+    val elfBlob = ByteArray(elfHeader + 2)
+    elfName.forEachIndexed { i, ch -> elfBlob[i] = ch.code.toByte() }
+    elfBlob[elfName.length] = 0
+    val sectionFileOffset = 0x4000
+    fun putElf32(off: Int, v: Int) { for (i in 0..3) elfBlob[off+i] = (v ushr (8*i)).toByte() }
+    putElf32(elfName.length + 1, sectionFileOffset + elfHeader)
+    putElf32(elfName.length + 5, 2)
+    elfBlob[elfHeader] = 0x55; elfBlob[elfHeader+1] = 0x66
+    rt.installElfVmResources(elfBlob, sectionFileOffset)
+    putAscii(memory, resName, elfName)
+    val elfPtr = call(memory, rt, cpu, "vm_load_resource", resName, sizeOut)
+    require(elfPtr == MreRuntime.RESOURCE_BASE + elfHeader)
+    require(memory.read32(sizeOut) == 2)
+    require(memory.readBytes(elfPtr, 2).contentEquals(byteArrayOf(0x55,0x66)))
+
+    // Replacing an archive with a smaller blob clears stale mapped tail bytes.
+    rt.installRawResources(ByteArray(4))
+    require(memory.read8(MreRuntime.RESOURCE_BASE + elfHeader) == 0)
+    putAscii(memory, resName, elfName)
+    require(call(memory, rt, cpu, "vm_load_resource", resName, sizeOut) == 0)
+    require(memory.read32(sizeOut) == 0)
 
     // libc-style helper used by Whisk3D-style guests.
     val input = SCRATCH + 0x2200; val fmt = SCRATCH + 0x2300; val outInt = SCRATCH + 0x2400

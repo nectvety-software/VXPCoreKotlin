@@ -82,11 +82,22 @@ Các symbol/alias được đưa thành first-class handler dựa trên binary v
 
 - `vm_file_get_file_size` hỗ trợ cả handle và UCS2 path khi nhận dạng được calling pattern.
 - `vm_file_getfilesize` giữ ABI handle + output pointer.
-- open mode được làm chặt hơn: read-only không tạo parent directory; append đặt file pointer cuối file.
+- `vm_file_open` tách rõ quyền read/write theo mode; read-only không tạo parent directory, directory không thể bị mở như file và `..` vẫn bị chặn bởi sandbox.
+- `vm_file_read`/`vm_file_write` từ chối độ dài âm, giới hạn một request ở 32 MiB, kiểm tra guest buffer/output pointer trước I/O và báo chính xác số byte thực đọc/ghi.
+- EOF là read thành công với `bytesRead = 0`; partial read trả đúng số byte thực tế.
+- `vm_file_seek` hỗ trợ SET/CUR/END, cho phép seek sau EOF nhưng từ chối vị trí âm/overflow thay vì kẹp về byte 0.
+- append được cưỡng chế ở **mỗi lần write**, vì vậy guest `seek(0)` sau khi mở append cũng không ghi đè dữ liệu cũ.
 - `vm_resource_init` alias first-class cho resource init.
 - `vm_res_load` alias first-class cho named-resource loading.
+- `vm_load_resource` và `vm_res_load` dùng chung lookup/bounds path, trả size nhất quán và từ chối output pointer không hợp lệ.
+- Resource loader nhận tên ASCII chuẩn và fallback UCS2 khi buffer thể hiện rõ mẫu UCS2; lookup vẫn exact/case-sensitive.
+- `vm_resource_get_data` kiểm tra chặt `[offset, offset+size)` và cho phép zero-byte probe an toàn.
+- ELF `.vm_res` parser dừng sạch ở entry lỗi, bỏ duplicate name và chuyển absolute file offset thành pointer ổn định trong `RESOURCE_BASE`.
+- Khi thay resource archive bằng blob nhỏ hơn, vùng tail cũ được xóa để guest pointer cũ không đọc lại dữ liệu stale.
 - giữ `vm_find_first/next/close`, wildcard, CRUD, seek, commit, attributes và C:/E: sandbox.
 - giữ raw-resource và ELF `.vm_res` mapping read-only trong guest address space.
+
+Regression tập trung xem `validation/FILE_RESOURCE_v0.8.4.1.md`.
 
 ## Clean-room compatibility surface
 
